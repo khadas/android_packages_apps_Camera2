@@ -1908,6 +1908,12 @@ public class CameraActivity extends Activity
                 if (event.isLongPress()) {
                     return true;
                 }
+            } else if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+                mModeListView.switchItem(true);
+                return true;
+            } else if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+                mModeListView.switchItem(false);
+                return true;
             }
         }
 

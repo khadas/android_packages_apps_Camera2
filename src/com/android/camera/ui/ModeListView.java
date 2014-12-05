@@ -2172,4 +2172,19 @@ public class ModeListView extends FrameLayout
             }
         }
     }
+
+     /**
+    *Add function switch between video camera and so on
+    */
+    public void switchItem(boolean inc) {
+        int selectItem = (mFocusItem == NO_ITEM_SELECTED) ? 0 : mFocusItem;
+         if (inc) {
+            if (selectItem > 0) {
+                selectItem -= 1;
+            }
+            onItemSelected(mModeSelectorItems[selectItem]);
+         }else {
+            onItemSelected(mModeSelectorItems[selectItem+1]);
+         }
+    }
 }
