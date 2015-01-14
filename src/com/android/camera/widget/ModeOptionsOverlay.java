@@ -71,6 +71,13 @@ public class ModeOptionsOverlay extends FrameLayout
         mModeOptionsToggle.setClickable(clickable);
     }
 
+    public boolean isModeOptionVisible() {
+        if ( mModeOptionsToggle.isShown() ) {
+            return false;
+        }
+        return true;
+    }
+
     @Override
     public void onFinishInflate() {
         mModeOptions = (ModeOptions) findViewById(R.id.mode_options);
@@ -83,6 +90,18 @@ public class ModeOptionsOverlay extends FrameLayout
         });
 
         mModeOptionsToggle = (LinearLayout) findViewById(R.id.mode_options_toggle);
+        mModeOptionsToggle.setFocusable(true);
+        mModeOptionsToggle.setFocusableInTouchMode(true);
+        mModeOptionsToggle.setOnFocusChangeListener ( new OnFocusChangeListener() {
+            @Override
+            public void onFocusChange ( View arg0, boolean hasFocus ) {
+                if ( hasFocus ) {
+                    mModeOptionsToggle.setBackgroundDrawable ( getResources().getDrawable ( R.drawable.bg_options_indicator_focus ) );
+                } else {
+                    mModeOptionsToggle.setBackgroundDrawable ( getResources().getDrawable ( R.drawable.bg_options_indicator ) );
+                }
+            }
+        });
         mModeOptionsToggle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

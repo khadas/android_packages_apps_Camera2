@@ -1134,6 +1134,18 @@ public class ModeListView extends FrameLayout
         mTotalModes = mSupportedModes.size();
         initializeModeSelectorItems();
         mSettingsButton = findViewById(R.id.settings_button);
+        mSettingsButton.setFocusable(true);
+        mSettingsButton.setFocusableInTouchMode(true);
+        mSettingsButton.setOnFocusChangeListener( new OnFocusChangeListener( ){
+            @Override
+            public void onFocusChange ( View arg0, boolean hasFocus ) {
+                if ( hasFocus ) {
+                    mSettingsButton.setBackgroundDrawable ( getResources().getDrawable ( R.drawable.bg_options_indicator_focus ) );
+                } else {
+                    mSettingsButton.setBackgroundDrawable ( getResources().getDrawable ( R.drawable.bg_options_indicator ) );
+                }
+            }
+        });
         mSettingsButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -2177,14 +2189,19 @@ public class ModeListView extends FrameLayout
     *Add function switch between video camera and so on
     */
     public void switchItem(boolean inc) {
-        int selectItem = (mFocusItem == NO_ITEM_SELECTED) ? 0 : mFocusItem;
-         if (inc) {
-            if (selectItem > 0) {
-                selectItem -= 1;
+        int modeId = mModeSwitchListener.getCurrentModeIndex();
+        if ( inc ) {
+            if ( modeId == 0 ) {
+                mSettingsButton.requestFocus();
+            } else {
+                onItemSelected ( mModeSelectorItems[modeId - 1] );
             }
-            onItemSelected(mModeSelectorItems[selectItem]);
-         }else {
-            onItemSelected(mModeSelectorItems[selectItem+1]);
-         }
+        } else {
+            if ( modeId == ( mModeSelectorItems.length - 1 ) ) {
+                mSettingsButton.requestFocus();
+            } else {
+                onItemSelected ( mModeSelectorItems[modeId + 1] );
+            }
+        }
     }
 }

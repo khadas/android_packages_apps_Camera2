@@ -84,8 +84,8 @@ public class ModeOptions extends FrameLayout {
         mModeOptionsPano = (RadioOptions) findViewById(R.id.mode_options_pano);
         mModeOptionsExposure = (RadioOptions) findViewById(R.id.mode_options_exposure);
         mMainBar = mActiveBar = mModeOptionsButtons;
+        final ImageButton exposureButton = (ImageButton) findViewById(R.id.exposure_button);
 
-        ImageButton exposureButton = (ImageButton) findViewById(R.id.exposure_button);
         exposureButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

@@ -1908,10 +1908,10 @@ public class CameraActivity extends Activity
                 if (event.isLongPress()) {
                     return true;
                 }
-            } else if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+            } else if (keyCode == KeyEvent.KEYCODE_DPAD_UP && mModeListView.isShown()) {
                 mModeListView.switchItem(true);
                 return true;
-            } else if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+            } else if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN && mModeListView.isShown()) {
                 mModeListView.switchItem(false);
                 return true;
             }
@@ -1930,8 +1930,12 @@ public class CameraActivity extends Activity
             } else if (keyCode == KeyEvent.KEYCODE_MENU
                     || keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
                 // Let the mode list view consume the event.
-                mCameraAppUI.openModeList();
-                return true;
+        if ( !mCameraAppUI.isModeOptionVisible() ) {
+            mCameraAppUI.openModeList();
+        } else {
+            return false;
+        }
+        return true;
             } else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
                 mCameraAppUI.showFilmstrip();
                 return true;
