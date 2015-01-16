@@ -54,6 +54,30 @@ public class CameraPictureSizesCacher {
         }
     }
 
+    public static void updateVideoSizesForCamera(Context context, int cameraId) {
+        if (cameraId < 0)
+            return;
+        String key_build = PICTURE_SIZES_BUILD_KEY + cameraId;
+        String key_sizes = PICTURE_SIZES_SIZES_KEY + cameraId;
+        Camera thisCamera;
+        try {
+            thisCamera = Camera.open(cameraId);
+        } catch (RuntimeException e) {
+            // Camera open will fail if already open.
+            return;
+        }
+        if (thisCamera != null) {
+            SharedPreferences defaultPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+            List<Size> sizes = Size.buildListFromCameraSizes(thisCamera.getParameters()
+                    .getSupportedPictureSizes());
+            thisCamera.release();
+            SharedPreferences.Editor editor = defaultPrefs.edit();
+            editor.putString(key_build, Build.DISPLAY);
+            editor.putString(key_sizes, Size.listToString(sizes));
+            editor.apply();
+        }
+    }
+
     /**
      * Return list of Sizes for provided cameraId.  Check first to see if we
      * have it in the cache for the current android.os.Build.

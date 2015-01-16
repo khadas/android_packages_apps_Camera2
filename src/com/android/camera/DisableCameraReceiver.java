@@ -22,7 +22,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.Camera.CameraInfo;
+import android.hardware.usb.UsbAccessory;
+import android.hardware.usb.UsbConstants;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbInterface;
+import android.hardware.usb.UsbManager;
 
+import com.android.camera.settings.CameraPictureSizesCacher;
 import com.android.camera.debug.Log;
 
 // We want to disable camera-related activities if there is no camera. This
@@ -31,6 +37,7 @@ import com.android.camera.debug.Log;
 public class DisableCameraReceiver extends BroadcastReceiver {
     private static final Log.Tag TAG = new Log.Tag("DisableCamRcver");
     private static final boolean CHECK_BACK_CAMERA_ONLY = true;
+    private static final boolean DEBUG = false;
     private static final String ACTIVITIES[] = {
         "com.android.camera.CameraLauncher",
     };
@@ -38,19 +45,32 @@ public class DisableCameraReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         // Disable camera-related activities if there is no camera.
+        String action = intent.getAction();
         boolean needCameraActivity = CHECK_BACK_CAMERA_ONLY
             ? hasBackCamera()
             : hasCamera();
+        if (Intent.ACTION_BOOT_COMPLETED.equals(action)) {
+            if (!needCameraActivity) {
+                Log.i(TAG, "disable all camera activities");
+                for (int i = 0; i < ACTIVITIES.length; i++) {
+                    disableComponent(context, ACTIVITIES[i]);
+                }
+            }
+        } else if(UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)){
+            UsbDevice device = (UsbDevice)intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
 
-        if (!needCameraActivity) {
-            Log.i(TAG, "disable all camera activities");
-            for (int i = 0; i < ACTIVITIES.length; i++) {
-                disableComponent(context, ACTIVITIES[i]);
+            if (isUsbCamera(device)) {
+                CameraPictureSizesCacher.updateVideoSizesForCamera(context, getBackCameraId());
+            }
+        } else if(UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)){
+            UsbDevice device = (UsbDevice)intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+            if (isUsbCamera(device)) {
+                CameraPictureSizesCacher.updateVideoSizesForCamera(context, getBackCameraId());
             }
         }
 
         // Disable this receiver so it won't run again.
-        disableComponent(context, "com.android.camera.DisableCameraReceiver");
+        //disableComponent(context, "com.android.camera.DisableCameraReceiver");
     }
 
     private boolean hasCamera() {
@@ -73,6 +93,18 @@ public class DisableCameraReceiver extends BroadcastReceiver {
         return false;
     }
 
+    private int getBackCameraId() {
+        int n = android.hardware.Camera.getNumberOfCameras();
+        CameraInfo info = new CameraInfo();
+        for (int i = 0; i < n; i++) {
+            android.hardware.Camera.getCameraInfo(i, info);
+            if (info.facing == CameraInfo.CAMERA_FACING_BACK) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     private void disableComponent(Context context, String klass) {
         ComponentName name = new ComponentName(context, klass);
         PackageManager pm = context.getPackageManager();
@@ -83,4 +115,23 @@ public class DisableCameraReceiver extends BroadcastReceiver {
             PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
             PackageManager.DONT_KILL_APP);
     }
+
+    public boolean isUsbCamera(UsbDevice device) {
+        int count = device.getInterfaceCount();
+        if (DEBUG) {
+            for (int i = 0; i < count; i++) {
+                UsbInterface intf = device.getInterface(i);
+                Log.i(TAG, "isCamera UsbInterface:" + intf);
+            }
+        }
+
+        for (int i = 0; i < count; i++) {
+            UsbInterface intf = device.getInterface(i);
+            if (intf.getInterfaceClass() == UsbConstants.USB_CLASS_VIDEO) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
