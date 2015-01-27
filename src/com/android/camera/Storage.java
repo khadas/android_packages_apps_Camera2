@@ -264,7 +264,7 @@ public class Storage {
      * @return The size of the file. -1 if failed.
      */
     private static long writeFile(String path, byte[] jpeg, ExifInterface exif) {
-        if (exif != null) {
+        /*if (exif != null) {
             try {
                 exif.writeExif(jpeg, path);
                 File f = new File(path);
@@ -274,7 +274,8 @@ public class Storage {
             }
         } else {
             return writeFile(path, jpeg);
-        }
+        }*/
+        writeFile(path, jpeg);
         return -1;
     }
 
