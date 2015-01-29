@@ -275,8 +275,8 @@ public class Storage {
         } else {
             return writeFile(path, jpeg);
         }*/
-        writeFile(path, jpeg);
-        return -1;
+
+        return writeFile(path, jpeg);
     }
 
     /**
