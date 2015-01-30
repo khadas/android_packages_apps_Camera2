@@ -154,6 +154,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import android.hardware.usb.UsbAccessory;
+import android.hardware.usb.UsbConstants;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbInterface;
+import android.hardware.usb.UsbManager;
+
+import com.android.camera.settings.CameraPictureSizesCacher;
+
 public class CameraActivity extends Activity
         implements AppController, CameraAgent.CameraOpenCallback,
         ShareActionProvider.OnShareTargetSelectedListener,
@@ -193,7 +201,6 @@ public class CameraActivity extends Activity
      * This data adapter is used by FilmStripView.
      */
     private LocalDataAdapter mDataAdapter;
-
     private OneCameraManager mCameraManager;
     private SettingsManager mSettingsManager;
     private ModeListView mModeListView;
@@ -277,6 +284,32 @@ public class CameraActivity extends Activity
         public void onReceive(Context context, Intent intent) {
             finish();
         }
+    };
+
+    private final BroadcastReceiver mUsbDeviceReceiver = new BroadcastReceiver() {
+
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
+
+            } else if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
+                UsbDevice device = (UsbDevice)intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+                if (isUsbCamera(device))
+                    cleanPictureSizesForCamera();
+            }
+        }
+
+        private boolean isUsbCamera(UsbDevice device) {
+            int count = device.getInterfaceCount();
+
+            for (int i = 0; i < count; i++) {
+                UsbInterface intf = device.getInterface(i);
+                if (intf.getInterfaceClass() == UsbConstants.USB_CLASS_VIDEO) {
+                    return true;
+                }
+            }
+            return false;
+       }
     };
 
     private final ActionBar.OnMenuVisibilityListener mOnMenuVisibilityListener =
@@ -472,6 +505,15 @@ public class CameraActivity extends Activity
                 }
             };
 
+    private void updatePictureSizesForCamera() {
+        CameraPictureSizesCacher.updatePictureSizesForCamera(
+            CameraActivity.this, mCameraController.getCurrentCamera());
+    }
+
+    private void cleanPictureSizesForCamera() {
+        CameraPictureSizesCacher.cleanPictureSizesForCamera(CameraActivity.this, mCameraController.getCurrentCamera());
+    }
+
     @Override
     public void onCameraOpened(CameraAgent.CameraProxy camera) {
         Log.v(TAG, "onCameraOpened");
@@ -518,6 +560,7 @@ public class CameraActivity extends Activity
         }
         Log.v(TAG, "invoking onChangeCamera");
         mCameraAppUI.onChangeCamera();
+        cleanPictureSizesForCamera();
     }
 
     private void resetExposureCompensationToDefault(CameraAgent.CameraProxy camera) {
@@ -1320,6 +1363,10 @@ public class CameraActivity extends Activity
 
     @Override
     public void onCreate(Bundle state) {
+        IntentFilter usbFilter = new IntentFilter(UsbManager.ACTION_USB_DEVICE_ATTACHED);
+        usbFilter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
+        registerReceiver(mUsbDeviceReceiver, usbFilter);
+
         CameraPerformanceTracker.onEvent(CameraPerformanceTracker.ACTIVITY_START);
         super.onCreate(state);
         if (!Glide.isSetup()) {

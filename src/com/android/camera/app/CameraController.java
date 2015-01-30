@@ -171,6 +171,10 @@ public class CameraController implements CameraAgent.CameraOpenCallback, CameraP
         }
     }
 
+    public CameraAgent.CameraProxy getCurrentCamera() {
+        return mCameraProxy;
+    }
+
     @Override
     public void onCameraDisabled(int cameraId) {
         if (mCallbackReceiver != null) {

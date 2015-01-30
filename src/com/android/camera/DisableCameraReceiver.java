@@ -56,21 +56,9 @@ public class DisableCameraReceiver extends BroadcastReceiver {
                     disableComponent(context, ACTIVITIES[i]);
                 }
             }
-        } else if(UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)){
-            UsbDevice device = (UsbDevice)intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
-
-            if (isUsbCamera(device)) {
-                CameraPictureSizesCacher.updateVideoSizesForCamera(context, getBackCameraId());
-            }
-        } else if(UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)){
-            UsbDevice device = (UsbDevice)intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
-            if (isUsbCamera(device)) {
-                CameraPictureSizesCacher.updateVideoSizesForCamera(context, getBackCameraId());
-            }
         }
-
         // Disable this receiver so it won't run again.
-        //disableComponent(context, "com.android.camera.DisableCameraReceiver");
+        disableComponent(context, "com.android.camera.DisableCameraReceiver");
     }
 
     private boolean hasCamera() {

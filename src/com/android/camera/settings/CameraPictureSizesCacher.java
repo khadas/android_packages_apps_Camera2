@@ -21,7 +21,8 @@ import android.content.SharedPreferences;
 import android.hardware.Camera;
 import android.os.Build;
 import android.preference.PreferenceManager;
-
+import com.android.ex.camera2.portability.CameraAgent.CameraProxy;
+import com.android.ex.camera2.portability.CameraCapabilities;
 import com.android.ex.camera2.portability.Size;
 
 import java.util.List;
@@ -54,28 +55,33 @@ public class CameraPictureSizesCacher {
         }
     }
 
-    public static void updateVideoSizesForCamera(Context context, int cameraId) {
-        if (cameraId < 0)
-            return;
-        String key_build = PICTURE_SIZES_BUILD_KEY + cameraId;
-        String key_sizes = PICTURE_SIZES_SIZES_KEY + cameraId;
-        Camera thisCamera;
-        try {
-            thisCamera = Camera.open(cameraId);
-        } catch (RuntimeException e) {
-            // Camera open will fail if already open.
-            return;
-        }
-        if (thisCamera != null) {
+    public static void updatePictureSizesForCamera(Context context, CameraProxy device) {
+        if (device != null) {
+            int cameraId = device.getCameraId();
+            String key_build = PICTURE_SIZES_BUILD_KEY + cameraId;
+            String key_sizes = PICTURE_SIZES_SIZES_KEY + cameraId;
             SharedPreferences defaultPrefs = PreferenceManager.getDefaultSharedPreferences(context);
-            List<Size> sizes = Size.buildListFromCameraSizes(thisCamera.getParameters()
-                    .getSupportedPictureSizes());
-            thisCamera.release();
+            CameraCapabilities mCapabilities = device.getCapabilities();
+            List<Size> sizes = mCapabilities.getSupportedPhotoSizes();
             SharedPreferences.Editor editor = defaultPrefs.edit();
             editor.putString(key_build, Build.DISPLAY);
             editor.putString(key_sizes, Size.listToString(sizes));
             editor.apply();
         }
+    }
+
+    public static void cleanPictureSizesForCamera(Context context, CameraProxy device) {
+         if (device != null) {
+            int cameraId = device.getCameraId();
+            String key_build = PICTURE_SIZES_BUILD_KEY + cameraId;
+            String key_sizes = PICTURE_SIZES_SIZES_KEY + cameraId;
+            SharedPreferences defaultPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+            CameraCapabilities mCapabilities = device.getCapabilities();
+            SharedPreferences.Editor editor = defaultPrefs.edit();
+            editor.putString(key_build, "");
+            editor.putString(key_sizes, "");
+            editor.apply();
+         }
     }
 
     /**
