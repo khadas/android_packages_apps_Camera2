@@ -233,8 +233,8 @@ public class CameraSettingsActivity extends FragmentActivity {
                 if (pref instanceof PreferenceGroup) {
                     fillEntriesAndSummaries((PreferenceGroup) pref);
                 }
-                setSummary(pref);
                 setEntries(pref);
+                setSummary(pref);
             }
         }
 
@@ -287,10 +287,23 @@ public class CameraSettingsActivity extends FragmentActivity {
             } else if (listPreference.getKey().equals(Keys.KEY_PICTURE_SIZE_FRONT)) {
                 setEntriesForSelection(mPictureSizesFront, listPreference);
             } else if (listPreference.getKey().equals(Keys.KEY_VIDEO_QUALITY_BACK)) {
+                int backCameraId = SettingsUtil.getCameraId(mInfos, SettingsUtil.CAMERA_FACING_BACK);
+                filterEntries(backCameraId, mVideoQualitiesBack);
                 setEntriesForSelection(mVideoQualitiesBack, listPreference);
             } else if (listPreference.getKey().equals(Keys.KEY_VIDEO_QUALITY_FRONT)) {
+                int frontCameraId = SettingsUtil.getCameraId(mInfos, SettingsUtil.CAMERA_FACING_FRONT);
+                filterEntries(frontCameraId, mVideoQualitiesFront);
                 setEntriesForSelection(mVideoQualitiesFront, listPreference);
             }
+        }
+
+        private void filterEntries(int cameraId, SelectedVideoQualities selectedQualities) {
+            if (!SettingsUtil.supportQuality(cameraId, selectedQualities.large))
+                selectedQualities.largeEnabled = false;
+            if (!SettingsUtil.supportQuality(cameraId, selectedQualities.medium))
+                selectedQualities.mediumEnabled = false;
+            if (!SettingsUtil.supportQuality(cameraId, selectedQualities.small))
+                selectedQualities.smallEnabled = false;
         }
 
         /**
@@ -352,18 +365,28 @@ public class CameraSettingsActivity extends FragmentActivity {
             if (selectedQualities == null) {
                 return;
             }
-
             // Avoid adding double entries at the bottom of the list which
             // indicates that not at least 3 qualities are supported.
             ArrayList<String> entries = new ArrayList<String>();
-            entries.add(mCamcorderProfileNames[selectedQualities.large]);
-            if (selectedQualities.medium != selectedQualities.large) {
-                entries.add(mCamcorderProfileNames[selectedQualities.medium]);
+            ArrayList<String> resultValues = new ArrayList<String>();
+            String [] values = getResources().getStringArray(R.array.pref_video_quality_entryvalues);
+            if (selectedQualities.largeEnabled) {
+                entries.add(mCamcorderProfileNames[selectedQualities.large]);
+                resultValues.add(values[0]);
             }
-            if (selectedQualities.small != selectedQualities.medium) {
+            if (selectedQualities.medium != selectedQualities.large && selectedQualities.mediumEnabled) {
+                entries.add(mCamcorderProfileNames[selectedQualities.medium]);
+                resultValues.add(values[1]);
+            }
+            if (selectedQualities.small != selectedQualities.medium && selectedQualities.smallEnabled) {
                 entries.add(mCamcorderProfileNames[selectedQualities.small]);
+                resultValues.add(values[2]);
             }
             preference.setEntries(entries.toArray(new String[0]));
+            preference.setEntryValues(resultValues.toArray(new String[0]));
+            int selectedQuality = selectedQualities.getFromSetting(preference.getValue());
+            if (!validInSelected(selectedQuality, selectedQualities))
+                preference.setValue((String)resultValues.get(0));
         }
 
         /**
@@ -396,9 +419,21 @@ public class CameraSettingsActivity extends FragmentActivity {
             if (selectedQualities == null) {
                 return;
             }
-
             int selectedQuality = selectedQualities.getFromSetting(preference.getValue());
+            if (!validInSelected(selectedQuality, selectedQualities))
+                selectedQuality = selectedQualities.getDefaultQuality();
             preference.setSummary(mCamcorderProfileNames[selectedQuality]);
+        }
+
+
+        private boolean validInSelected(int quality, SelectedVideoQualities selectedQualities) {
+            if (selectedQualities.large == quality && selectedQualities.largeEnabled)
+                return true;
+            if (selectedQualities.medium == quality && selectedQualities.mediumEnabled)
+                return true;
+            if (selectedQualities.small == quality && selectedQualities.smallEnabled)
+                return true;
+            return false;
         }
 
         /**

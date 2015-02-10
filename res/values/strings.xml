@@ -300,7 +300,6 @@
     <string name="pref_camera_whitebalance_label_daylight">DAYLIGHT</string>
     <string name="pref_camera_whitebalance_label_fluorescent">FLUORESCENT</string>
     <string name="pref_camera_whitebalance_label_cloudy">CLOUDY</string>
-
     <!-- Default scene mode setting. -->
     <string name="pref_camera_scenemode_default" translatable="false">auto</string>
 
@@ -483,6 +482,7 @@
     <string name="accessibility_switch_to_photo_sphere">Switch to Photo Sphere</string>
     <!-- The button to switch to the high quality mode. [CHAR LIMIT=NONE] -->
     <string name="accessibility_switch_to_gcam">Switch to high quality</string>
+    <string name="video_quality_not_support">This quality is not supported!</string>
     <!-- The button to switch to the Re-Focus mode. [CHAR LIMIT=NONE] -->
     <string name="accessibility_switch_to_refocus">Switch to Refocus</string>
     <!-- The button in review mode indicating that the photo taking, video recording, and panorama saving session should be canceled [CHAR LIMIT=NONE] -->

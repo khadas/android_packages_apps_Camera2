@@ -338,6 +338,7 @@
     <string name="open_source_licenses" msgid="2169711954264883060">"开放源代码许可"</string>
     <string name="pref_category_general" msgid="6737748849700581019">"常规设置"</string>
     <string name="pref_category_resolution_quality" msgid="6641462402321962896">"分辨率和画质"</string>
+    <string name="video_quality_not_support" >"不支持该画质！"</string>
     <string name="pref_category_about" msgid="1966255405679342337">"应用信息"</string>
     <string name="pref_title_build_version" msgid="481489988124832651">"版本号"</string>
     <string name="pref_video_quality_entry_low" msgid="737962621299050603">"低"</string>
