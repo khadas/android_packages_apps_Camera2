@@ -2031,6 +2031,9 @@ public class CameraAppUI implements ModeListView.ModeSwitchListener,
         mFilmstripLayout.showFilmstrip();
     }
 
+    public boolean setCaptureOnfocus(){
+        return mBottomBar.setCaptureOnfocus();
+   }
     public void hideFilmstrip() {
         mFilmstripLayout.hideFilmstrip();
         mModeOptionsOverlay.closeModeOptions();
