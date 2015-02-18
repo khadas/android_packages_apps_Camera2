@@ -295,7 +295,9 @@ public class BottomBar extends FrameLayout {
             setButtonImageLevels(0);
         }
     }
-
+    public boolean setCaptureOnfocus(){
+        return mShutterButton.isFocused();
+    }
     /**
      * Sets a capture layout helper to query layout rect from.
      */
