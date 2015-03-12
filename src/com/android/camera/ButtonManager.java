@@ -421,6 +421,19 @@ public class ButtonManager implements SettingsManager.OnSettingChangedListener {
      */
     public void disableButton(int buttonId) {
         MultiToggleImageButton button = getButtonOrError(buttonId);
+
+        // HDR and HDR+ buttons share the same button object,
+        // but change actual image icons at runtime.
+        // This extra check is to ensure the correct icons are used
+        // in the case of the HDR[+] button being disabled at startup,
+        // e.g. app startup with front-facing camera.
+        // b/18104680
+        if (buttonId == BUTTON_HDR_PLUS) {
+            initializeHdrPlusButtonIcons(button, R.array.pref_camera_hdr_plus_icons);
+        } else if (buttonId == BUTTON_HDR) {
+            initializeHdrButtonIcons(button, R.array.pref_camera_hdr_icons);
+        }
+
         if (button.isEnabled()) {
             button.setEnabled(false);
             if (mListener != null) {
@@ -713,10 +726,7 @@ public class ButtonManager implements SettingsManager.OnSettingChangedListener {
     private void initializeHdrPlusButton(MultiToggleImageButton button,
             final ButtonCallback cb, int resIdImages) {
 
-        if (resIdImages > 0) {
-            button.overrideImageIds(resIdImages);
-        }
-        button.overrideContentDescriptions(R.array.hdr_plus_descriptions);
+        initializeHdrPlusButtonIcons(button, resIdImages);
 
         int index = mSettingsManager.getIndexOfCurrentValue(SettingsManager.SCOPE_GLOBAL,
                                                             Keys.KEY_CAMERA_HDR_PLUS);
@@ -734,16 +744,20 @@ public class ButtonManager implements SettingsManager.OnSettingChangedListener {
         });
     }
 
+    private void initializeHdrPlusButtonIcons(MultiToggleImageButton button, int resIdImages) {
+        if (resIdImages > 0) {
+            button.overrideImageIds(resIdImages);
+        }
+        button.overrideContentDescriptions(R.array.hdr_plus_descriptions);
+    }
+
     /**
      * Initialize an hdr button.
      */
     private void initializeHdrButton(MultiToggleImageButton button,
             final ButtonCallback cb, int resIdImages) {
 
-        if (resIdImages > 0) {
-            button.overrideImageIds(resIdImages);
-        }
-        button.overrideContentDescriptions(R.array.hdr_descriptions);
+        initializeHdrButtonIcons(button, resIdImages);
 
         int index = mSettingsManager.getIndexOfCurrentValue(SettingsManager.SCOPE_GLOBAL,
                                                             Keys.KEY_CAMERA_HDR);
@@ -759,6 +773,13 @@ public class ButtonManager implements SettingsManager.OnSettingChangedListener {
                 }
             }
         });
+    }
+
+    private void initializeHdrButtonIcons(MultiToggleImageButton button, int resIdImages) {
+        if (resIdImages > 0) {
+            button.overrideImageIds(resIdImages);
+        }
+        button.overrideContentDescriptions(R.array.hdr_descriptions);
     }
 
     /**
