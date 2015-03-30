@@ -176,7 +176,7 @@ public class ButtonManager implements SettingsManager.OnSettingChangedListener {
         mButtonCountdown = (MultiToggleImageButton) root.findViewById(R.id.countdown_toggle_button);
         mButtonCountdown.setFocusable(true);
         mButtonCountdown.requestFocus();
-        mButtonCountdown.setFocusableInTouchMode(true);
+        //mButtonCountdown.setFocusableInTouchMode(true);
     }
 
     @Override

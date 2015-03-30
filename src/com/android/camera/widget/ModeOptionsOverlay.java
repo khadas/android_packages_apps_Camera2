@@ -91,7 +91,7 @@ public class ModeOptionsOverlay extends FrameLayout
 
         mModeOptionsToggle = (LinearLayout) findViewById(R.id.mode_options_toggle);
         mModeOptionsToggle.setFocusable(true);
-        mModeOptionsToggle.setFocusableInTouchMode(true);
+        //mModeOptionsToggle.setFocusableInTouchMode(true);
         mModeOptionsToggle.setOnFocusChangeListener ( new OnFocusChangeListener() {
             @Override
             public void onFocusChange ( View arg0, boolean hasFocus ) {

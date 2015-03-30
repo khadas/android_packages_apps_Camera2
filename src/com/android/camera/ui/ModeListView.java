@@ -1197,7 +1197,7 @@ public class ModeListView extends FrameLayout
 
     public boolean settingsButtonRequestFocus(){
         mSettingsButton.setFocusable(true);
-        mSettingsButton.setFocusableInTouchMode(true);
+        //mSettingsButton.setFocusableInTouchMode(true);
         mSettingsButton.requestFocus();
         return true;
     }
