@@ -372,12 +372,12 @@ public class CameraSettingsActivity extends FragmentActivity {
                 setEntriesForSelection(mPictureSizes.frontCameraSizes, listPreference);
             } else if (listPreference.getKey().equals(Keys.KEY_VIDEO_QUALITY_BACK)) {
                 int backCameraId = SettingsUtil.getCameraId(mInfos, SettingsUtil.CAMERA_FACING_BACK);
-                filterEntries(backCameraId, mVideoQualitiesBack);
-                setEntriesForSelection(mVideoQualitiesBack, listPreference);
+                filterEntries(backCameraId, mPictureSizes.videoQualitiesBack.orNull());
+                setEntriesForSelection(mPictureSizes.videoQualitiesBack.orNull(), listPreference);
             } else if (listPreference.getKey().equals(Keys.KEY_VIDEO_QUALITY_FRONT)) {
                 int frontCameraId = SettingsUtil.getCameraId(mInfos, SettingsUtil.CAMERA_FACING_FRONT);
-                filterEntries(frontCameraId, mVideoQualitiesFront);
-                setEntriesForSelection(mVideoQualitiesFront, listPreference);
+                filterEntries(frontCameraId, mPictureSizes.videoQualitiesFront.orNull());
+                setEntriesForSelection(mPictureSizes.videoQualitiesFront.orNull(), listPreference);
             }
         }
 
@@ -435,7 +435,7 @@ public class CameraSettingsActivity extends FragmentActivity {
             for (int i = 0; i < selectedSizes.size(); i++) {
                 Size size = selectedSizes.get(i);
                 entries[i] = getSizeSummaryString(size);
-                entryValues[i] = SettingsUtil.sizeToSetting(size);
+                entryValues[i] = SettingsUtil.sizeToSettingString(size);
                 if (entryValues[i].equals(setting)) {
                     valuesExist = true;
                 }

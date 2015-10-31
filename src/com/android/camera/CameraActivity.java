@@ -222,7 +222,6 @@ public class CameraActivity extends QuickActivity
     /**
      * This data adapter is used by FilmStripView.
      */
-    private LocalDataAdapter mDataAdapter;
     private OneCameraManager mCameraManager;
 
     private VideoItemFactory mVideoItemFactory;

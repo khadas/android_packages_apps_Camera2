@@ -735,7 +735,7 @@ public class VideoModule extends CameraModule
             : Keys.KEY_VIDEO_QUALITY_BACK;
         String videoQuality = settingsManager
                 .getString(SettingsManager.SCOPE_GLOBAL, videoQualityKey);
-        List<Size> sizes = mCameraCapabilities.getSupportedVideoSizes();
+        List<Size> sizes = Size.convert(mCameraCapabilities.getSupportedVideoSizes());
         int quality = SettingsUtil.getVideoQuality(videoQuality, mCameraId, sizes);
         //int quality = SettingsUtil.getVideoQuality(videoQuality, mCameraId);
         Log.d(TAG, "Selected video quality for '" + videoQuality + "' is " + quality);
@@ -1200,7 +1200,7 @@ public class VideoModule extends CameraModule
     }
 
     private Size getNearestSize(int w, int h) {
-        List<Size> supportedVideo = mCameraCapabilities.getSupportedVideoSizes();
+        List<Size> supportedVideo = Size.convert(mCameraCapabilities.getSupportedVideoSizes());
         int minWidth = 10000;
         int targetWidth = -1;
         for (Size sz : supportedVideo) {
@@ -1410,7 +1410,6 @@ public class VideoModule extends CameraModule
                         return;
                     }
 
-                    pauseAudioPlayback();
                     try {
                         mMediaRecorder.start(); // Recording is now started
                     } catch (RuntimeException e) {

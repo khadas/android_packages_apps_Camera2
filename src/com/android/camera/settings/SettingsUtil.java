@@ -31,7 +31,6 @@ import com.android.camera2.R;
 import com.android.ex.camera2.portability.CameraDeviceInfo;
 import com.android.ex.camera2.portability.CameraSettings;
 
-import com.android.ex.camera2.portability.Size;
 import android.hardware.Camera;
 
 import java.util.ArrayList;
@@ -329,7 +328,7 @@ public class SettingsUtil {
         return quality;
     }
 
-    private static boolean profileValid(int cameraId, int quality, List<Size>supported) {
+    private static boolean profileValid(int cameraId, int quality, List<Size> supported) {
         boolean isValid = false;
         CamcorderProfile mProfile = CamcorderProfile.get(cameraId, quality);
         for (Size sz: supported) {
