@@ -2209,6 +2209,34 @@ public class CameraActivity extends QuickActivity
     }
 
     @Override
+    public boolean dispatchKeyEvent ( KeyEvent event ) {
+        if ( event.getAction() == KeyEvent.ACTION_UP ) {
+            return super.dispatchKeyEvent ( event );
+        } else if ( event.getKeyCode() == KeyEvent.KEYCODE_DPAD_RIGHT ) {
+            if ( mModeListVisible ) {
+                mModeListView.onBackPressed();
+                mModeListView.settingsButtonRequestFocus();
+            } else if ( !mModeListVisible && mCameraAppUI.setCaptureOnfocus() ) {
+                mCameraAppUI.showFilmstrip();
+            }
+        } else if ( event.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT ) {
+            if ( event.getKeyCode() == KeyEvent.KEYCODE_MENU
+                || event.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT ) {
+                if ( !mModeListVisible && !mCameraAppUI.setCaptureOnfocus() ) {
+                    mCameraAppUI.openModeList();
+                }
+            }
+        } else if ( event.getKeyCode() == KeyEvent.KEYCODE_DPAD_UP &&
+            mModeListVisible ) {
+            mModeListView.switchItem ( false, true );
+        } else if ( event.getKeyCode() == KeyEvent.KEYCODE_DPAD_DOWN &&
+            mModeListVisible ) {
+            mModeListView.switchItem ( false, false );
+        }
+        return super.dispatchKeyEvent ( event );
+    }
+
+    @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (!mFilmstripVisible) {
             if (mCurrentModule.onKeyDown(keyCode, event)) {
@@ -2233,13 +2261,8 @@ public class CameraActivity extends QuickActivity
             // consume the key event.
             if (mCurrentModule.onKeyUp(keyCode, event)) {
                 return true;
-            } else if (keyCode == KeyEvent.KEYCODE_MENU
-                    || keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
-                // Let the mode list view consume the event.
-                mCameraAppUI.openModeList();
-                return true;
-            } else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
-                mCameraAppUI.showFilmstrip();
+            }else if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER && mModeListVisible) {
+                mModeListView.switchItem(true, false);
                 return true;
             }
         } else {
