@@ -21,6 +21,9 @@ import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.RectF;
 import android.graphics.SurfaceTexture;
+import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraManager;
+import android.hardware.camera2.CameraAccessException;
 import android.location.Location;
 import android.media.MediaActionSound;
 import android.net.Uri;
@@ -167,6 +170,7 @@ public class CaptureModule extends CameraModule implements
     private FocusController mFocusController;
     private OneCameraCharacteristics mCameraCharacteristics;
     final private PreviewTransformCalculator mPreviewTransformCalculator;
+    private CameraActivity mCameraActivity;
 
     /** The listener to listen events from the CaptureModuleUI. */
     private final CaptureModuleUI.CaptureModuleUIListener mUIListener =
@@ -399,6 +403,7 @@ public class CaptureModule extends CameraModule implements
 
     @Override
     public void init(CameraActivity activity, boolean isSecureCamera, boolean isCaptureIntent) {
+        mCameraActivity = activity;
         Profile guard = mProfiler.create("CaptureModule.init").start();
         Log.d(TAG, "init UseAutotransformUiLayout = " + USE_AUTOTRANSFORM_UI_LAYOUT);
         HandlerThread thread = new HandlerThread("CaptureModule.mCameraHandler");
@@ -1355,6 +1360,7 @@ public class CaptureModule extends CameraModule implements
         boolean useHdr = mHdrPlusEnabled && mCameraFacing == Facing.BACK;
 
         CameraId cameraId = mOneCameraManager.findFirstCameraFacing(mCameraFacing);
+        Log.d(TAG,"cameraId="+cameraId);
         final String settingScope = SettingsManager.getCameraSettingScope(cameraId.getValue());
 
         OneCameraCaptureSetting captureSetting;
@@ -1539,8 +1545,23 @@ public class CaptureModule extends CameraModule implements
      * Returns which way around the camera is facing, based on it's ID.
      */
     private Facing getFacingFromCameraId(int cameraId) {
+        try {
+            CameraManager manager = (CameraManager) mCameraActivity.getSystemService(Context.CAMERA_SERVICE);
+            String cameraIds = manager.getCameraIdList()[cameraId];
+            Log.d(TAG,"cameraIds="+cameraIds);
+            CameraCharacteristics characteristics = manager.getCameraCharacteristics(cameraIds);
+            int mLensFacing = characteristics.get(CameraCharacteristics.LENS_FACING);
+            // cameraservice map external to front for legacy API
+            return (mLensFacing == CameraCharacteristics.LENS_FACING_BACK) ? Facing.BACK : Facing.FRONT;
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+            Log.e(TAG,"find camera facing failed !!!");
+            return Facing.BACK;
+        }
+        /*
         return mAppController.getCameraProvider().getCharacteristics(cameraId)
                 .isFacingFront() ? Facing.FRONT : Facing.BACK;
+        */
     }
 
     private void resetTextureBufferSize() {

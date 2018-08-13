@@ -1287,8 +1287,8 @@ public class CameraUtil {
         if (deviceOrientationDegrees == OrientationEventListener.ORIENTATION_UNKNOWN) {
             return 0;
         }
-        boolean isFrontCamera = characteristics.get(CameraCharacteristics.LENS_FACING) ==
-                CameraMetadata.LENS_FACING_FRONT;
+        boolean isFrontCamera = characteristics.get(CameraCharacteristics.LENS_FACING) !=
+                CameraMetadata.LENS_FACING_BACK;
         int sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
         return getImageRotation(sensorOrientation, deviceOrientationDegrees, isFrontCamera);
     }

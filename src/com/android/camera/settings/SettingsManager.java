@@ -128,6 +128,7 @@ public class SettingsManager {
     protected SharedPreferences openPreferences(String scope) {
         synchronized (mLock) {
             SharedPreferences preferences;
+            scope = scope.replace('/','_');
             preferences = mContext.getSharedPreferences(
                     mPackageName + scope, Context.MODE_PRIVATE);
 
@@ -157,6 +158,7 @@ public class SettingsManager {
     }
 
     public static String getCameraSettingScope(String cameraIdValue) {
+        cameraIdValue = cameraIdValue.replace('/','_');
         return CAMERA_SCOPE_PREFIX + cameraIdValue;
     }
 

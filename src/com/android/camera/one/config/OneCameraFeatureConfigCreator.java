@@ -169,6 +169,7 @@ public class OneCameraFeatureConfigCreator {
                 int override = GservicesHelper.getCaptureSupportLevelOverrideBack(contentResolver);
                 return CaptureSupportLevel.fromFlag(override);
             }
+            case CameraCharacteristics.LENS_FACING_EXTERNAL:
             case CameraCharacteristics.LENS_FACING_FRONT: {
                 int override = GservicesHelper.getCaptureSupportLevelOverrideFront(contentResolver);
                 return CaptureSupportLevel.fromFlag(override);
