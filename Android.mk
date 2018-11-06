@@ -34,7 +34,12 @@ LOCAL_USE_AAPT2 := true
 
 LOCAL_PACKAGE_NAME := Camera2
 
-LOCAL_SDK_VERSION := current
+#LOCAL_SDK_VERSION := current
+LOCAL_PRIVATE_PLATFORM_APIS := true
+
+LOCAL_CERTIFICATE := platform
+
+#LOCAL_DEX_PREOPT := false
 
 LOCAL_PROGUARD_FLAG_FILES := proguard.flags
 

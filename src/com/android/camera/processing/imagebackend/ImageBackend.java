@@ -527,6 +527,7 @@ public class ImageBackend implements ImageConsumer, ImageTaskManager {
             Runnable unregisterRunnable = new Runnable() {
                 @Override
                 public void run() {
+                    Log.d(TAG, "unregister finalImageProcessorListener");
                     getProxyListener().unregisterListener(finalImageProcessorListener);
                 }
             };
@@ -540,6 +541,7 @@ public class ImageBackend implements ImageConsumer, ImageTaskManager {
                 processingFlags.contains(ImageTaskFlags.CLOSE_ON_ALL_TASKS_RELEASE),
                 runnableOptional)) {
             if (imageProcessorListener.isPresent()) {
+                Log.d(TAG, "register finalImageProcessorListener");
                 getProxyListener().registerListener(imageProcessorListener.get(), img.proxy);
             }
             return true;

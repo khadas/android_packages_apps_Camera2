@@ -17,6 +17,7 @@
 package com.android.camera.processing;
 
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -101,6 +102,7 @@ public class ProcessingService extends Service implements ProgressListener {
 
     @Override
     public void onCreate() {
+        Log.d(TAG, "onCreate");
         mProcessingServiceManager = ProcessingServiceManager.instance();
         mSessionManager = getServices().getCaptureSessionManager();
 
@@ -113,8 +115,8 @@ public class ProcessingService extends Service implements ProgressListener {
         intentFilter.addAction(ACTION_PAUSE_PROCESSING_SERVICE);
         intentFilter.addAction(ACTION_RESUME_PROCESSING_SERVICE);
         LocalBroadcastManager.getInstance(this).registerReceiver(mServiceController, intentFilter);
-        mNotificationBuilder = createInProgressNotificationBuilder();
         mNotificationManager = AndroidServices.instance().provideNotificationManager();
+        mNotificationBuilder = createInProgressNotificationBuilder();
     }
 
     @Override
@@ -259,7 +261,11 @@ public class ProcessingService extends Service implements ProgressListener {
      * Creates a notification to indicate that a computation is in progress.
      */
     private Notification.Builder createInProgressNotificationBuilder() {
-        return new Notification.Builder(this)
+        NotificationChannel channel = new NotificationChannel("camera_save",
+                "camera_save", NotificationManager.IMPORTANCE_DEFAULT);
+        mNotificationManager.createNotificationChannel(channel);
+
+        return new Notification.Builder(this, "camera_save")
                 .setSmallIcon(R.drawable.ic_notification)
                 .setWhen(System.currentTimeMillis())
                 .setOngoing(true)
