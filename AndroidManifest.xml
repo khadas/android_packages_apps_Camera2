@@ -2,11 +2,12 @@
 
 <manifest
     xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.android.camera2">
+    package="com.android.camera2"
+    android:versionName="rk_camera2_v1.0.9">
 
     <uses-sdk
         android:minSdkVersion="19"
-        android:targetSdkVersion="24" />
+        android:targetSdkVersion="26" />
 
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -29,6 +30,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
     <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_MEDIA_STORAGE"/>
 
     <supports-screens
         android:anyDensity="true"
@@ -151,6 +153,10 @@
             android:theme="@style/Theme.CameraSettings"
             android:configChanges="keyboardHidden|orientation|screenSize">
         </activity>
+        
+        <service android:name="com.android.camera.processing.ProcessingService"
+                 android:exported="false">
+        </service>
 
         <receiver android:name="com.android.camera.DisableCameraReceiver">
             <intent-filter>
