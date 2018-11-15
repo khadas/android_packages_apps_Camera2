@@ -254,7 +254,7 @@ public class ProcessingService extends Service implements ProgressListener {
     }
 
     private void postNotification() {
-        mNotificationManager.notify(CAMERA_NOTIFICATION_ID, mNotificationBuilder.build());
+        //mNotificationManager.notify(CAMERA_NOTIFICATION_ID, mNotificationBuilder.build());
     }
 
     /**
