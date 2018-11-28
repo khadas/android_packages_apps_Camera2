@@ -74,7 +74,7 @@ public class ProcessingService extends Service implements ProgressListener {
 
     private static final Log.Tag TAG = new Log.Tag("ProcessingService");
     private static final int THREAD_PRIORITY = Process.THREAD_PRIORITY_BACKGROUND;
-    private static final int CAMERA_NOTIFICATION_ID = 2;
+    private static final int CAMERA_NOTIFICATION_ID = 0;
     private Notification.Builder mNotificationBuilder;
     private NotificationManager mNotificationManager;
 
