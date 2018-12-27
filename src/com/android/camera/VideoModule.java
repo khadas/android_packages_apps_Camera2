@@ -741,6 +741,7 @@ public class VideoModule extends CameraModule
         }
         mCameraDevice = cameraProxy;
         mCameraCapabilities = mCameraDevice.getCapabilities();
+        SettingsUtil.setCameraCapabilities(mCameraCapabilities);
         mAppController.getCameraAppUI().showAccessibilityZoomUI(
                 mCameraCapabilities.getMaxZoomRatio());
         mCameraSettings = mCameraDevice.getSettings();
