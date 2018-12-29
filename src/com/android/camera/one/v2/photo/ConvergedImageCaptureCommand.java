@@ -26,6 +26,8 @@ import android.os.Build;
 
 import com.android.camera.async.BufferQueue;
 import com.android.camera.async.Updatable;
+import com.android.camera.debug.Log;
+import com.android.camera.debug.Log.Tag;
 import com.android.camera.one.v2.autofocus.AETriggerResult;
 import com.android.camera.one.v2.autofocus.AFTriggerResult;
 import com.android.camera.one.v2.camera2proxy.CameraCaptureSessionClosedException;
@@ -124,6 +126,7 @@ class ConvergedImageCaptureCommand implements ImageCaptureCommand {
                 if (mWaitForAEConvergence) {
                     waitForAEConvergence(session);
                 }
+                Log.d(new Tag("ConvergedImageCaptureCommand"),"captureBurst:" + mBurst.size());
                 captureBurst(session, imageStream, imageExposureUpdatable, imageSaver);
             } finally {
                 // Always reset the repeating stream to ensure AF/AE are not

@@ -16,6 +16,7 @@
 
 package com.android.camera;
 
+import android.app.ActivityManager;
 import android.content.Context;
 import android.graphics.Matrix;
 import android.graphics.Point;
@@ -173,6 +174,7 @@ public class CaptureModule extends CameraModule implements
     private OneCameraCharacteristics mCameraCharacteristics;
     final private PreviewTransformCalculator mPreviewTransformCalculator;
     private CameraActivity mCameraActivity;
+    private CaptureSession mSession;
 
     /** The listener to listen events from the CaptureModuleUI. */
     private final CaptureModuleUI.CaptureModuleUIListener mUIListener =
@@ -505,6 +507,7 @@ public class CaptureModule extends CameraModule implements
         if (mCamera == null || mPaused) {
             return;
         }
+        if (ActivityManager.isUserAMonkey())    return;
         Log.d(TAG, "onShutterButtonClick");
 
         int countDownDuration = mSettingsManager
@@ -551,18 +554,18 @@ public class CaptureModule extends CameraModule implements
             return;
         }
 
-        CaptureSession session = createAndStartCaptureSession();
+        mSession = createAndStartCaptureSession();
         int orientation = mAppController.getOrientationManager().getDeviceOrientation()
                 .getDegrees();
 
         // TODO: This should really not use getExternalCacheDir and instead use
         // the SessionStorage API. Need to sync with gcam if that's OK.
         PhotoCaptureParameters params = new PhotoCaptureParameters(
-                session.getTitle(), orientation, session.getLocation(),
+                mSession.getTitle(), orientation, mSession.getLocation(),
                 mContext.getExternalCacheDir(), this, mPictureSaverCallback,
                 mHeadingSensor.getCurrentHeading(), mZoomValue, 0);
-        decorateSessionAtCaptureTime(session);
-        mCamera.takePicture(params, session);
+        decorateSessionAtCaptureTime(mSession);
+        mCamera.takePicture(params, mSession);
     }
 
     /**
@@ -631,9 +634,12 @@ public class CaptureModule extends CameraModule implements
 
     @Override
     public void onQuickExpose() {
+        if (mPaused || mCamera == null) return;
+        Log.d(TAG, "onQuickExpose===");
         mMainThread.execute(new Runnable() {
             @Override
             public void run() {
+                if (mPaused || mCamera == null) return;
                 // Starts the short version of the capture animation UI.
                 mAppController.startFlashAnimation(true);
                 if (mSettingsManager.getBoolean(SettingsManager.SCOPE_GLOBAL,
@@ -787,6 +793,11 @@ public class CaptureModule extends CameraModule implements
             mMediaActionSound.release();
             mSoundPlayerLoaded = false;
         }
+        if (mSession != null) {
+            mSession.cancel();
+            mSession = null;
+        }
+            
         mCameraHandler.removeCallbacksAndMessages(null);
         mCameraHandler.getLooper().quitSafely();
     }

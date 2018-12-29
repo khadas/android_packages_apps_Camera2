@@ -21,6 +21,7 @@ import android.hardware.camera2.CameraAccessException;
 import com.android.camera.app.OrientationManager;
 import com.android.camera.async.MainThread;
 import com.android.camera.async.Updatable;
+import com.android.camera.debug.Log;
 import com.android.camera.one.OneCamera;
 import com.android.camera.one.v2.camera2proxy.CameraCaptureSessionClosedException;
 import com.android.camera.one.v2.commands.CameraCommand;
@@ -35,6 +36,8 @@ class PictureTakerImpl implements PictureTaker {
     private final CameraCommandExecutor mCameraCommandExecutor;
     private final ImageSaver.Builder mImageSaverBuilder;
     private final ImageCaptureCommand mCommand;
+    
+    private Log.Tag TAG = new Log.Tag("PictureTakerImpl");
 
     public PictureTakerImpl(MainThread mainExecutor, CameraCommandExecutor cameraCommandExecutor,
             ImageSaver.Builder imageSaverBuilder, ImageCaptureCommand command) {
@@ -92,8 +95,10 @@ class PictureTakerImpl implements PictureTaker {
                 params.saverCallback,
                 OrientationManager.DeviceOrientation.from(params.orientation),
                 session);
-
+        
+        Log.d(TAG, "takepicture start");
         mCameraCommandExecutor.execute(new PictureTakerCommand(
                 imageExposureCallback, imageSaver, session));
+        Log.d(TAG, "takepicture end");
     }
 }

@@ -180,7 +180,7 @@ public class FilmstripItemUtils {
             if (bitmap == null) {
                 bitmap = retriever.getFrameAtTime();
             }
-        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
             Log.e(TAG, "MediaMetadataRetriever.setDataSource() fail:" + e.getMessage());
         }
         retriever.release();

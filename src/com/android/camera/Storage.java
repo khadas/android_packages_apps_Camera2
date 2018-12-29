@@ -165,7 +165,9 @@ public class Storage {
 
         Uri uri = null;
         try {
+            Log.d(TAG, "resolver.insert start");
             uri = resolver.insert(Images.Media.EXTERNAL_CONTENT_URI, values);
+            Log.d(TAG, "resolver.insert end");
         } catch (Throwable th)  {
             // This can happen when the external volume is already mounted, but
             // MediaScanner has not notify MediaProvider to add that volume.
@@ -278,6 +280,7 @@ public class Storage {
     public static Uri updateImage(Uri imageUri, ContentResolver resolver, String title, long date,
            Location location, int orientation, ExifInterface exif,
            byte[] jpeg, int width, int height, String mimeType) throws IOException {
+        Log.d(TAG, "updateImage:" + width + "x" + height + ",jpeg:" + (jpeg == null ? 0 : jpeg.length));
         String path = generateFilepath(title, mimeType);
         writeFile(path, jpeg, exif);
         return updateImage(imageUri, resolver, title, date, location, orientation, jpeg.length, path,
@@ -417,6 +420,7 @@ public class Storage {
         Uri resultUri = imageUri;
         if (Storage.isSessionUri(imageUri)) {
             // If this is a session uri, then we need to add the image
+            Log.d(TAG, "addImageToMediaStore");
             resultUri = addImageToMediaStore(resolver, title, date, location, orientation,
                     jpegLength, path, width, height, mimeType);
             sSessionsToContentUris.put(imageUri, resultUri);

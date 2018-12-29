@@ -46,6 +46,7 @@ class PictureCallbackAdapter {
             public void update(@Nonnull Void v) {
                 mMainExecutor.execute(new Runnable() {
                     public void run() {
+                        if (mPictureCallback != null)
                         mPictureCallback.onQuickExpose();
                     }
                 });
