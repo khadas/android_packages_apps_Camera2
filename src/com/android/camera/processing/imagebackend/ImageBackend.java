@@ -501,11 +501,13 @@ public class ImageBackend implements ImageConsumer, ImageTaskManager {
                 // Request job that creates both filmstrip thumbnail from YUV,
                 // JPEG compression of the YUV Image, and writes the result to
                 // disk
+                Log.d(TAG, "add TaskPreviewChainedJpeg");
                 tasksToExecute.add(new TaskPreviewChainedJpeg(img, executor, this, session,
                         FILMSTRIP_THUMBNAIL_TARGET_SIZE, mByteBufferDirectPool));
             } else {
                 // Request job that only does JPEG compression and writes the
                 // result to disk
+                Log.d(TAG, "add TaskCompressImageToJpeg");
                 tasksToExecute.add(new TaskCompressImageToJpeg(img, executor, this, session,
                       mByteBufferDirectPool));
             }
