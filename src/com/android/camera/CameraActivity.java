@@ -2371,6 +2371,21 @@ public class CameraActivity extends QuickActivity
                     updateStorageSpaceAndHint(null);
                 }
             });
+
+            mLocalVideosObserver.setForegroundChangeListener(
+                    new FilmstripContentObserver.ChangeListener() {
+                        @Override
+                        public void onChange() {
+                            Log.d(TAG, "LocalVideosObserver changed mDataAdapter.requestLoad");
+                            mDataAdapter.requestLoad(new Callback<Void>() {
+                                @Override
+                                public void onCallback(Void result) {
+                                    fillTemporarySessions();
+                                }
+                            });
+                    updateStorageSpaceAndHint(null);
+                }
+            });
         }
 
         keepScreenOnForAWhile();
