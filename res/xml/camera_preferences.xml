@@ -93,12 +93,12 @@
         android:defaultValue="false"
         android:key="pref_camera_whitebalance_enable_key"
         android:title="@string/pref_camera_whitebalance_title" />
-    <!-- Anti banding -->
+    <!-- Anti banding
     <ListPreference
         android:defaultValue="@string/pref_antibanding_auto"
         android:entryValues="@array/pref_antibanding_entryvalues"
         android:key="pref_camera_antibanding_key"
-        android:title="@string/setting_camera_antibanding" />
+        android:title="@string/setting_camera_antibanding" /> -->
   </PreferenceScreen>
 
   <com.android.camera.settings.MyDialogPreference

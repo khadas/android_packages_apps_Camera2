@@ -82,6 +82,7 @@ public class BasicCameraFactory {
             CameraCommandExecutor cameraCommandExecutor,
             PreviewCommandFactory previewCommandFactory,
             Observable<OneCamera.PhotoCaptureParameters.Flash> flash,
+            Observable<OneCamera.PhotoCaptureParameters.WhiteBalance> wbSetting,
             Observable<Integer> exposure,
             Observable<Float> zoom,
             Observable<Boolean> hdrSceneSetting,
@@ -91,6 +92,8 @@ public class BasicCameraFactory {
               CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
         requestTemplate.setParam(
               CaptureRequest.CONTROL_AE_MODE, new FlashBasedAEMode(flash, hdrSceneSetting));
+        requestTemplate.setParam(
+                CaptureRequest.CONTROL_AWB_MODE, new WhiteBalanceMode(wbSetting));
         requestTemplate.setParam(
               CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, exposure);
 

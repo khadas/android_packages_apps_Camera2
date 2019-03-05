@@ -24,6 +24,7 @@ import android.hardware.camera2.CameraDevice;
 import com.android.camera.async.BufferQueue;
 import com.android.camera.async.Updatable;
 import com.android.camera.async.UpdatableCountDownLatch;
+import com.android.camera.debug.Log;
 import com.android.camera.one.v2.camera2proxy.CameraCaptureSessionClosedException;
 import com.android.camera.one.v2.camera2proxy.ImageProxy;
 import com.android.camera.one.v2.core.FrameServer;
@@ -45,6 +46,8 @@ class SimpleImageCaptureCommand implements ImageCaptureCommand {
     private final FrameServer mFrameServer;
     private final RequestBuilder.Factory mBuilderFactory;
     private final ManagedImageReader mImageReader;
+    
+    private final Log.Tag TAG = new Log.Tag("SimpleImageCaptureCommand");
 
     public SimpleImageCaptureCommand(FrameServer frameServer, RequestBuilder.Factory builder,
             ManagedImageReader imageReader) {
@@ -62,6 +65,7 @@ class SimpleImageCaptureCommand implements ImageCaptureCommand {
             ResourceAcquisitionFailedException {
         try (FrameServer.Session session = mFrameServer.createExclusiveSession();
                 ImageStream imageStream = mImageReader.createStream(1)) {
+            Log.d(TAG, "SimpleImageCaptureCommand run");
             UpdatableCountDownLatch<Void> exposureLatch = new UpdatableCountDownLatch<>(1);
             RequestBuilder photoRequest = mBuilderFactory.create(CameraDevice
                     .TEMPLATE_STILL_CAPTURE);

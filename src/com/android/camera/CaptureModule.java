@@ -905,6 +905,21 @@ public class CaptureModule extends CameraModule implements
                                 mAppController.getCameraScope(), Keys.KEY_EXPOSURE, value);
                     }
                 };
+        
+        bottomBarSpec.enableWhiteBalance = mCameraCharacteristics.isWhiteBalanceSupported();
+        bottomBarSpec.supportedWhiteBalances = mCameraCharacteristics.getSupportedWhiteBalances();
+        bottomBarSpec.whiteBalanceSetCallback = 
+            new CameraAppUI.BottomBarUISpec.WhiteBalanceSetCallback() {
+            
+            @Override
+            public void setWhiteBalance(String value) {
+                // TODO Auto-generated method stub
+                if (mPaused || mCamera == null) return;
+                if (DEBUG) Log.i(TAG, "WhiteBalanceSetCallback");
+                mSettingsManager.set(
+                        mAppController.getCameraScope(), Keys.KEY_WHITEBALANCE, value);
+            }
+        };
 
         return bottomBarSpec;
     }

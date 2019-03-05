@@ -82,6 +82,8 @@ public class CameraSettingsActivity extends FragmentActivity {
      */
     public static final String PREF_SCREEN_EXTRA = "pref_screen_extra";
     public static final String HIDE_ADVANCED_SCREEN = "hide_advanced";
+    public static final String HIDE_EX_SCREEN = "hide_ex";
+    public static final String HIDE_WB_SCREEN = "hide_wb";
     private OneCameraManager mOneCameraManager;
 
     @Override
@@ -90,6 +92,8 @@ public class CameraSettingsActivity extends FragmentActivity {
 
         FatalErrorHandler fatalErrorHandler = new FatalErrorHandlerImpl(this);
         boolean hideAdvancedScreen = false;
+        boolean hideExposureScreen = false;
+        boolean hideWbScreen = false;
 
         try {
             mOneCameraManager = OneCameraModule.provideOneCameraManager();
@@ -114,12 +118,27 @@ public class CameraSettingsActivity extends FragmentActivity {
             boolean isExposureCompensationSupportedByBackCamera = (backCameraId != null) &&
                     (mOneCameraManager.getOneCameraCharacteristics(backCameraId)
                             .isExposureCompensationSupported());
+            boolean isWbSupportedByFrontCamera = (frontCameraId != null) &&
+                    (mOneCameraManager.getOneCameraCharacteristics(frontCameraId)
+                            .isWhiteBalanceSupported());
+            boolean isWbSupportedByBackCamera = (backCameraId != null) &&
+                    (mOneCameraManager.getOneCameraCharacteristics(backCameraId)
+                            .isWhiteBalanceSupported());
+            
 
             // Hides the option if neither front and back camera support exposure compensation.
             if (!isExposureCompensationSupportedByFrontCamera &&
-                    !isExposureCompensationSupportedByBackCamera) {
+                    !isExposureCompensationSupportedByBackCamera
+                    && !isWbSupportedByBackCamera && !isWbSupportedByFrontCamera) {
                 hideAdvancedScreen = true;
             }
+            
+            if (!isExposureCompensationSupportedByFrontCamera
+                    && !isExposureCompensationSupportedByBackCamera)
+                hideExposureScreen = true;
+            
+            if (!isWbSupportedByBackCamera && !isWbSupportedByFrontCamera)
+                hideWbScreen = true;
         } catch (OneCameraAccessException e) {
             fatalErrorHandler.onGenericCameraAccessFailure();
         }
@@ -133,6 +152,8 @@ public class CameraSettingsActivity extends FragmentActivity {
         Bundle bundle = new Bundle(1);
         bundle.putString(PREF_SCREEN_EXTRA, prefKey);
         bundle.putBoolean(HIDE_ADVANCED_SCREEN, hideAdvancedScreen);
+        bundle.putBoolean(HIDE_EX_SCREEN, hideExposureScreen);
+        bundle.putBoolean(HIDE_WB_SCREEN, hideWbScreen);
         dialog.setArguments(bundle);
         getFragmentManager().beginTransaction().replace(android.R.id.content, dialog).commit();
     }
@@ -160,6 +181,8 @@ public class CameraSettingsActivity extends FragmentActivity {
         private CameraDeviceInfo mInfos;
         private String mPrefKey;
         private boolean mHideAdvancedScreen;
+        private boolean mHideExScreen;
+        private boolean mHideWbScreen;
         private boolean mGetSubPrefAsRoot = true;
 
         // Selected resolutions for the different cameras and sizes.
@@ -186,6 +209,8 @@ public class CameraSettingsActivity extends FragmentActivity {
             if (arguments != null) {
                 mPrefKey = arguments.getString(PREF_SCREEN_EXTRA);
                 mHideAdvancedScreen = arguments.getBoolean(HIDE_ADVANCED_SCREEN);
+                mHideExScreen = arguments.getBoolean(HIDE_EX_SCREEN);
+                mHideWbScreen = arguments.getBoolean(HIDE_WB_SCREEN);
             }
             Context context = this.getActivity().getApplicationContext();
             mInfos = CameraAgentFactory
@@ -207,8 +232,8 @@ public class CameraSettingsActivity extends FragmentActivity {
             final PreferenceScreen resolutionScreen =
                     (PreferenceScreen) findPreference(PREF_CATEGORY_RESOLUTION);
             fillEntriesAndSummaries(resolutionScreen);
-            setEntries(findPreference(Keys.KEY_ANTIBANDING));
-            setSummary(findPreference(Keys.KEY_ANTIBANDING));
+            //setEntries(findPreference(Keys.KEY_ANTIBANDING));
+            //setSummary(findPreference(Keys.KEY_ANTIBANDING));
             setSummary(findPreference(Keys.KEY_MEDIA_SAVE_PATH));
 
             PreferenceScreen advancedScreen =
@@ -218,6 +243,11 @@ public class CameraSettingsActivity extends FragmentActivity {
             if (mHideAdvancedScreen) {
                 PreferenceScreen root = (PreferenceScreen) findPreference("prefscreen_top");
                 root.removePreference(advancedScreen);
+            } else {
+                if (mHideExScreen)
+                    advancedScreen.removePreference(findPreference(Keys.KEY_EXPOSURE_COMPENSATION_ENABLED));
+                if (mHideWbScreen)
+                    advancedScreen.removePreference(findPreference(Keys.KEY_WHITEBALANCE_ENABLED));
             }
 
             FatalErrorHandler fatalErrorHandler = new FatalErrorHandlerImpl(this.getActivity());
@@ -294,8 +324,8 @@ public class CameraSettingsActivity extends FragmentActivity {
             final PreferenceScreen resolutionScreen =
                     (PreferenceScreen) findPreference(PREF_CATEGORY_RESOLUTION);
             fillEntriesAndSummaries(resolutionScreen);
-            setEntries(findPreference(Keys.KEY_ANTIBANDING));
-            setSummary(findPreference(Keys.KEY_ANTIBANDING));
+            //setEntries(findPreference(Keys.KEY_ANTIBANDING));
+            //setSummary(findPreference(Keys.KEY_ANTIBANDING));
             setSummary(findPreference(Keys.KEY_MEDIA_SAVE_PATH));
             setPreferenceScreenIntent(resolutionScreen);
 
