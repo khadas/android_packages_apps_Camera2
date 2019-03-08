@@ -353,19 +353,18 @@ public class IndicatorIconController
         ButtonManager buttonManager = mController.getButtonManager();
         if (buttonManager.isEnabled(ButtonManager.BUTTON_WHITEBALANCE)
                 && buttonManager.isVisible(ButtonManager.BUTTON_WHITEBALANCE)) {
-            CameraCapabilities cameraCapabilities = buttonManager.getCameraCapabilities();
             String value = mController.getSettingsManager().getString(
                     mController.getCameraScope(), Keys.KEY_WHITEBALANCE);
-            if (cameraCapabilities.getStringifier().stringify(CameraCapabilities.WhiteBalance.CLOUDY_DAYLIGHT)
+            if (ButtonManager.toApiCase(CameraCapabilities.WhiteBalance.CLOUDY_DAYLIGHT.name())
                     .equals(value)) {
                 changeVisibility(mWbIndicatorCloudy, View.VISIBLE);
-            } else if (cameraCapabilities.getStringifier().stringify(CameraCapabilities.WhiteBalance.FLUORESCENT)
+            } else if (ButtonManager.toApiCase(CameraCapabilities.WhiteBalance.FLUORESCENT.name())
                         .equals(value)) {
                 changeVisibility(mWbIndicatorFluorescent, View.VISIBLE);
-            } else if (cameraCapabilities.getStringifier().stringify(CameraCapabilities.WhiteBalance.INCANDESCENT)
+            } else if (ButtonManager.toApiCase(CameraCapabilities.WhiteBalance.INCANDESCENT.name())
                         .equals(value)) {
                 changeVisibility(mWbIndicatorTungsten, View.VISIBLE);
-            } else if (cameraCapabilities.getStringifier().stringify(CameraCapabilities.WhiteBalance.DAYLIGHT)
+            } else if (ButtonManager.toApiCase(CameraCapabilities.WhiteBalance.DAYLIGHT.name())
                         .equals(value)) {
                 changeVisibility(mWbIndicatorDaylight, View.VISIBLE);
             }

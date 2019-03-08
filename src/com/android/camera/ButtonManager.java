@@ -17,6 +17,7 @@
 package com.android.camera;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import android.content.Context;
@@ -199,6 +200,10 @@ public class ButtonManager implements SettingsManager.OnSettingChangedListener {
     public void load(View root) {
         getButtonsReferences(root);
         mButtonLoaded = true;
+    }
+    
+    public static String toApiCase(String enumCase) {
+        return enumCase.toLowerCase(Locale.US).replaceAll("_", "-");
     }
 
     /**
@@ -949,19 +954,19 @@ public class ButtonManager implements SettingsManager.OnSettingChangedListener {
                 public void onOptionClicked(View v) {
                     String value = (String) v.getTag();
                     cb.setWhiteBalance(value);
-                    if (mCameraCapabilities.getStringifier().stringify(CameraCapabilities.WhiteBalance.CLOUDY_DAYLIGHT)
+                    if (toApiCase(CameraCapabilities.WhiteBalance.CLOUDY_DAYLIGHT.name())
                             .equals(value)) {
                         mButtonWhiteBalance.setImageResource(R.drawable.ic_whitebalance_cloudy);
-                    } else if (mCameraCapabilities.getStringifier().stringify(CameraCapabilities.WhiteBalance.INCANDESCENT)
+                    } else if (toApiCase(CameraCapabilities.WhiteBalance.INCANDESCENT.name())
                             .equals(value)) {
                         mButtonWhiteBalance.setImageResource(R.drawable.ic_whitebalance_incandescent);
-                    } else if (mCameraCapabilities.getStringifier().stringify(CameraCapabilities.WhiteBalance.FLUORESCENT)
+                    } else if (toApiCase(CameraCapabilities.WhiteBalance.FLUORESCENT.name())
                             .equals(value)) {
                         mButtonWhiteBalance.setImageResource(R.drawable.ic_whitebalance_fluorescent);
-                    } else if (mCameraCapabilities.getStringifier().stringify(CameraCapabilities.WhiteBalance.DAYLIGHT)
+                    } else if (toApiCase(CameraCapabilities.WhiteBalance.DAYLIGHT.name())
                             .equals(value)) {
                         mButtonWhiteBalance.setImageResource(R.drawable.ic_whitebalance_daylight);
-                    } else if (mCameraCapabilities.getStringifier().stringify(CameraCapabilities.WhiteBalance.AUTO)
+                    } else if (toApiCase(CameraCapabilities.WhiteBalance.AUTO.name())
                             .equals(value)) {
                         mButtonWhiteBalance.setImageResource(R.drawable.ic_whitebalance_auto);
                     }
@@ -1423,13 +1428,13 @@ public class ButtonManager implements SettingsManager.OnSettingChangedListener {
                 if (state == 1) {
                     Log.i(new Log.Tag("ButtonManager"), "hdrcallback set scene hdr");
                     mSettingsManager.set(mAppController.getCameraScope(), Keys.KEY_SCENE_MODE,
-                            mCameraCapabilities.getStringifier().stringify(
-                                    CameraCapabilities.SceneMode.HDR));
+                            toApiCase(
+                                    CameraCapabilities.SceneMode.HDR.name()));
                 } else if (state == 0){
                     Log.i(new Log.Tag("ButtonManager"), "hdrcallback set scene auto");
                     mSettingsManager.set(mAppController.getCameraScope(), Keys.KEY_SCENE_MODE,
-                            mCameraCapabilities.getStringifier().stringify(
-                                    CameraCapabilities.SceneMode.AUTO));
+                            toApiCase(
+                                    CameraCapabilities.SceneMode.AUTO.name()));
                 }
                 mSettingsManager.setValueByIndex(SettingsManager.SCOPE_GLOBAL,
                                                  Keys.KEY_CAMERA_HDR, state);
@@ -1477,20 +1482,19 @@ public class ButtonManager implements SettingsManager.OnSettingChangedListener {
     private void initializeWhiteBalanceButton(ImageButton button) {
         String value = mSettingsManager.getString(
                 mAppController.getCameraScope(), Keys.KEY_WHITEBALANCE);
-        CameraCapabilities.Stringifier stringifier = mCameraCapabilities.getStringifier();
-        if (stringifier.stringify(CameraCapabilities.WhiteBalance.CLOUDY_DAYLIGHT)
+        if (toApiCase(CameraCapabilities.WhiteBalance.CLOUDY_DAYLIGHT.name())
                 .equals(value)) {
             button.setImageResource(R.drawable.ic_whitebalance_cloudy);
-        } else if (stringifier.stringify(CameraCapabilities.WhiteBalance.INCANDESCENT)
+        } else if (toApiCase(CameraCapabilities.WhiteBalance.INCANDESCENT.name())
                 .equals(value)) {
             button.setImageResource(R.drawable.ic_whitebalance_incandescent);
-        } else if (stringifier.stringify(CameraCapabilities.WhiteBalance.FLUORESCENT)
+        } else if (toApiCase(CameraCapabilities.WhiteBalance.FLUORESCENT.name())
                 .equals(value)) {
             button.setImageResource(R.drawable.ic_whitebalance_fluorescent);
-        } else if (stringifier.stringify(CameraCapabilities.WhiteBalance.DAYLIGHT)
+        } else if (toApiCase(CameraCapabilities.WhiteBalance.DAYLIGHT.name())
                 .equals(value)) {
             button.setImageResource(R.drawable.ic_whitebalance_daylight);
-        } else if (stringifier.stringify(CameraCapabilities.WhiteBalance.AUTO)
+        } else if (toApiCase(CameraCapabilities.WhiteBalance.AUTO.name())
                 .equals(value)) {
             button.setImageResource(R.drawable.ic_whitebalance_auto);
         }
