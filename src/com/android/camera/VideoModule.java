@@ -1379,7 +1379,10 @@ public class VideoModule extends CameraModule
             mMediaRecorder.setOutputFile(mVideoFileDescriptor.getFileDescriptor());
         } else {
             generateVideoFilename(mProfile.fileFormat);
-            mMediaRecorder.setOutputFile(mVideoFilename);
+            if (mVideoFilename.startsWith("/storage") && !mVideoFilename.startsWith(Storage.FLASH_DIR))
+                mMediaRecorder.setOutputFile(mVideoFilename.replaceFirst("/storage/" , "/mnt/media_rw/"));
+            else
+                mMediaRecorder.setOutputFile(mVideoFilename);
         }
 
         // Set maximum file size.
@@ -1438,6 +1441,7 @@ public class VideoModule extends CameraModule
             mMediaRecorder.reset();
             mMediaRecorder.release();
             mMediaRecorder = null;
+            Log.i(TAG, "Released media recorder.");
         }
         mVideoFilename = null;
     }

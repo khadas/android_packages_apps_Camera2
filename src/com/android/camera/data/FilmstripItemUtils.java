@@ -169,6 +169,7 @@ public class FilmstripItemUtils {
      * @return {@code null} if the loading failed.
      */
     public static Bitmap loadVideoThumbnail(String path) {
+        Log.d(TAG, "MediaMetadataRetriever loadVideoThumbnail");
         Bitmap bitmap = null;
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
         try {
@@ -184,6 +185,7 @@ public class FilmstripItemUtils {
             Log.e(TAG, "MediaMetadataRetriever.setDataSource() fail:" + e.getMessage());
         }
         retriever.release();
+        Log.d(TAG, "MediaMetadataRetriever loadVideoThumbnail end");
         return bitmap;
     }
 }

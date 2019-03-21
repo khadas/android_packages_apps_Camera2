@@ -1430,12 +1430,14 @@ public class CameraActivity extends QuickActivity
                     AsyncTask.THREAD_POOL_EXECUTOR.execute(new Runnable() {
                         @Override
                         public void run() {
+                            Log.d(TAG, "generateThumbnail onPostExecute");
                             final Optional<Bitmap> bitmap = data.generateThumbnail(
                                     mAboveFilmstripControlLayout.getWidth(),
                                     mAboveFilmstripControlLayout.getMeasuredHeight());
                             if (bitmap.isPresent()) {
                                 indicateCapture(bitmap.get(), 0);
                             }
+                            Log.d(TAG, "generateThumbnail onPostExecute end");
                         }
                     });
                 }
@@ -3552,7 +3554,7 @@ public class CameraActivity extends QuickActivity
             Collections.sort(volumes, VolumeInfo.getDescriptionComparator());
             for (VolumeInfo vol : volumes) {
                 if (vol.getType() == VolumeInfo.TYPE_PUBLIC) {
-                    Log.d(TAG, "Volume path:"+vol.getPath());
+                    Log.d(TAG, "Volume path for user:" + vol.getInternalPathForUser(context.getUserId()));
                     DiskInfo disk = vol.getDisk();
                     if(disk != null) {
                         if(disk.isSd()) {

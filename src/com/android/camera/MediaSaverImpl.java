@@ -226,6 +226,10 @@ public class MediaSaverImpl implements MediaSaver {
                 // apps reading incomplete data.  We need to do it after we are
                 // certain that the previous insert to MediaProvider is completed.
                 String finalName = values.getAsString(Video.Media.DATA);
+                if (path.startsWith("/storage") && !path.startsWith(Storage.FLASH_DIR))
+                    path = path.replaceFirst("/storage/" , "/mnt/media_rw/");
+                if (finalName.startsWith("/storage") && !finalName.startsWith(Storage.FLASH_DIR))
+                    finalName = finalName.replaceFirst("/storage/" , "/mnt/media_rw/");
                 File finalFile = new File(finalName);
                 if (new File(path).renameTo(finalFile)) {
                     path = finalName;

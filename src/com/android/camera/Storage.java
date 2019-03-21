@@ -22,7 +22,6 @@ import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.location.Location;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
 import android.provider.MediaStore.Images;
@@ -47,12 +46,10 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nonnull;
 
 public class Storage {
-    private static final String MNT_PATH = "/mnt/media_rw";
-    private static final String STORAGE_REGEX = "^/storage";
-    private static final String FLASH_DIR = Environment.getExternalStorageDirectory().getPath();
     public static final String DCIM =
             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).toString();
     public static String DIRECTORY = DCIM + "/Camera";
+    public static final String FLASH_DIR = Environment.getExternalStorageDirectory().getPath();
     public static String EXTENAL_SD = "/";
     public static String EXTERNAL_DIRECTORY = EXTENAL_SD
             + "/" + Environment.DIRECTORY_DCIM
@@ -280,7 +277,8 @@ public class Storage {
     public static Uri updateImage(Uri imageUri, ContentResolver resolver, String title, long date,
            Location location, int orientation, ExifInterface exif,
            byte[] jpeg, int width, int height, String mimeType) throws IOException {
-        Log.d(TAG, "updateImage:" + width + "x" + height + ",jpeg:" + (jpeg == null ? 0 : jpeg.length));
+        Log.d(TAG, "updateImage:" + width + "x" + height + ",jpeg:" + (jpeg == null ? 0 : jpeg.length)
+                + ",orientation:" + orientation);
         String path = generateFilepath(title, mimeType);
         writeFile(path, jpeg, exif);
         return updateImage(imageUri, resolver, title, date, location, orientation, jpeg.length, path,
@@ -313,10 +311,8 @@ public class Storage {
      * @return The size of the file. -1 if failed.
      */
     public static long writeFile(String path, byte[] jpeg, ExifInterface exif) throws IOException {
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O && !path.contains(FLASH_DIR)) {
-            path = path.replaceFirst(STORAGE_REGEX, MNT_PATH);
-        }
-
+        if (path.startsWith("/storage") && !path.startsWith(FLASH_DIR))
+            path = path.replaceFirst("/storage/" , "/mnt/media_rw/");
         if (!createDirectoryIfNeeded(path)) {
             Log.e(TAG, "Failed to create parent directory for file: " + path);
             return -1;
@@ -515,11 +511,10 @@ public class Storage {
         if (!Environment.MEDIA_MOUNTED.equals(state)) {
             return UNAVAILABLE;
         }
-        String saveDir = DIRECTORY;
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O && !DIRECTORY.contains(FLASH_DIR)) {
-            saveDir = DIRECTORY.replaceFirst(STORAGE_REGEX, MNT_PATH);
-        }
-        File dir = new File(saveDir);
+        String directory = DIRECTORY;
+        if (directory.startsWith("/storage") && !directory.startsWith(FLASH_DIR))
+            directory = directory.replaceFirst("/storage/" , "/mnt/media_rw/");
+        File dir = new File(directory);
         dir.mkdirs();
         if (!dir.isDirectory() || !dir.canWrite()) {
             Log.e(TAG, "DIRECTORY:" + dir.getPath() + " UNAVAILABLE");
@@ -539,6 +534,8 @@ public class Storage {
         String directory = DEFAULT_DIRECTORY;
         if (DEFAULT_DIRECTORY.equals(DIRECTORY))
             directory = EXTERNAL_DIRECTORY;
+        if (directory.startsWith("/storage") && !directory.startsWith(FLASH_DIR))
+            directory = directory.replaceFirst("/storage/" , "/mnt/media_rw/");
         File dir = new File(directory);
         dir.mkdirs();
         if (!dir.isDirectory() || !dir.canWrite()) {
