@@ -30,7 +30,6 @@ import com.android.camera.util.Size;
 import com.android.camera2.R;
 import com.android.ex.camera2.portability.CameraDeviceInfo;
 import com.android.ex.camera2.portability.CameraSettings;
-import com.android.ex.camera2.portability.CameraCapabilities;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -147,8 +146,6 @@ public class SettingsUtil {
             new SparseArray<SelectedPictureSizes>(2);
     public static SparseArray<SelectedVideoQualities> sCachedSelectedVideoQualities =
             new SparseArray<SelectedVideoQualities>(2);
-
-    private static CameraCapabilities mCameraCapabilities;
 
     /**
      * Based on the selected size, this method returns the matching concrete
@@ -308,51 +305,10 @@ public class SettingsUtil {
         return getSelectedVideoQualities(cameraId).getFromSetting(qualitySetting);
     }
 
-    public static void setCameraCapabilities(CameraCapabilities mCapabilities) {
-        mCameraCapabilities = mCapabilities;
-    }
-
-    private static boolean isPreviewQualitySupported(int videoQuality) {
-        Size size;
-        switch (videoQuality) {
-            case CamcorderProfile.QUALITY_2160P:
-               size = new Size(3840,2160);
-            break;
-            case CamcorderProfile.QUALITY_1080P:
-               size = new Size(1920,1080);
-            break;
-            case CamcorderProfile.QUALITY_720P:
-               size = new Size(1280,720);
-            break;
-            case CamcorderProfile.QUALITY_480P:
-               size = new Size(640,480);
-            break;
-            case CamcorderProfile.QUALITY_CIF:
-               size = new Size(352,288);
-            break;
-            case CamcorderProfile.QUALITY_QVGA:
-               size = new Size(320,240);
-            break;
-            case CamcorderProfile.QUALITY_QCIF:
-               size = new Size(176,144);
-            break;
-            default:
-                Log.e(TAG,"do not supported video quality");
-                return false;
-        }
-        if(mCameraCapabilities != null) {
-            List<Size> supportedPreviewSizes = Size.convert(mCameraCapabilities.getSupportedPreviewSizes());
-            if (!supportedPreviewSizes.contains(size)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     static SelectedVideoQualities getSelectedVideoQualities(int cameraId) {
-        /*if (sCachedSelectedVideoQualities.get(cameraId) != null) {
+        if (sCachedSelectedVideoQualities.get(cameraId) != null) {
             return sCachedSelectedVideoQualities.get(cameraId);
-        }*/
+        }
 
         // Go through the sizes in descending order, see if they are supported,
         // and set large/medium/small accordingly.
@@ -379,7 +335,6 @@ public class SettingsUtil {
     private static int getNextSupportedVideoQualityIndex(int cameraId, int start) {
         for (int i = start + 1; i < sVideoQualities.length; ++i) {
             if (isVideoQualitySupported(sVideoQualities[i])
-                    && isPreviewQualitySupported(sVideoQualities[i])
                     && CamcorderProfile.hasProfile(cameraId, sVideoQualities[i])) {
                 // We found a new supported quality.
                 return i;
