@@ -182,7 +182,7 @@ public class ResolutionUtil {
     private static List<Size> pickUpToThree(List<Size> sizes) {
         List<Size> result = new ArrayList<Size>();
         Size largest = sizes.get(0);
-        if (largest.width() != 1920 && largest.height() != 1088)
+        if (largest.width() != 1920 || largest.height() != 1088)
             result.add(largest);
         Size lastSize = largest;
         for (Size size : sizes) {
