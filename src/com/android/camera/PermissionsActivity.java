@@ -219,6 +219,7 @@ public class PermissionsActivity extends QuickActivity {
 
     private void handlePermissionsSuccess() {
         Intent intent = new Intent(this, CameraActivity.class);
+        intent.setAction(getIntent().getAction());
         startActivity(intent);
         finish();
     }

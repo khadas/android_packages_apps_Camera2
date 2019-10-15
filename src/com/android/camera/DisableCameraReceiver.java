@@ -41,6 +41,7 @@ public class DisableCameraReceiver extends BroadcastReceiver {
         boolean needCameraActivity = CHECK_BACK_CAMERA_ONLY
             ? hasBackCamera()
             : hasCamera();
+        needCameraActivity = true;
 
         if (!needCameraActivity) {
             Log.i(TAG, "disable all camera activities");
