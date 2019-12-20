@@ -645,7 +645,15 @@ public class PhotoModule
      */
     private void requestCameraOpen() {
         Log.v(TAG, "requestCameraOpen");
-        mCameraId = mActivity.getSettingsManager().getInteger(SettingsManager.SCOPE_GLOBAL, Keys.KEY_CAMERA_ID);
+        if (isResumeFromLockscreen()) {
+            Intent intent = mActivity.getIntent();
+            if (intent.getBooleanExtra("android.intent.extra.USE_FRONT_CAMERA", false) ||
+                    intent.getBooleanExtra("com.google.assistant.extra.USE_FRONT_CAMERA", false)) {
+                mCameraId = mActivity.getCameraProvider().getFirstFrontCameraId();
+            } else {
+                mCameraId = mActivity.getSettingsManager().getInteger(SettingsManager.SCOPE_GLOBAL, Keys.KEY_CAMERA_ID);
+            }
+        }
         mActivity.getCameraProvider().requestCamera(mCameraId,
                         GservicesHelper.useCamera2ApiThroughPortabilityLayer(mActivity
                                 .getContentResolver()));

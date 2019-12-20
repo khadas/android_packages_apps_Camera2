@@ -18,6 +18,8 @@ package com.android.camera;
 
 import android.app.ActivityManager;
 import android.content.Context;
+import android.content.Intent;
+
 import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.RectF;
@@ -37,7 +39,6 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.View;
-
 import com.android.camera.app.AppController;
 import com.android.camera.app.CameraAppUI;
 import com.android.camera.app.CameraAppUI.BottomBarUISpec;
@@ -95,6 +96,7 @@ import com.android.camera2.R;
 import com.android.ex.camera2.portability.CameraAgent.CameraProxy;
 import com.google.common.logging.eventprotos;
 import android.hardware.Camera.CameraInfo;
+import android.provider.MediaStore;
 
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -426,6 +428,14 @@ public class CaptureModule extends CameraModule implements
         mDisplayRotation = CameraUtil.getDisplayRotation();
         mCameraFacing = getFacingFromCameraId(
               mSettingsManager.getInteger(SettingsManager.SCOPE_GLOBAL, Keys.KEY_CAMERA_ID));
+        Intent intent = activity.getIntent();
+        String action = intent.getAction();
+        if (MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA.equals(action)
+                || MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA_SECURE.equals(action)) {
+            if (intent.getBooleanExtra("android.intent.extra.USE_FRONT_CAMERA", false) ||
+                    intent.getBooleanExtra("com.google.assistant.extra.USE_FRONT_CAMERA", false))
+                mCameraFacing = Facing.FRONT;
+        }
         mShowErrorAndFinish = !updateCameraCharacteristics();
         if (mShowErrorAndFinish) {
             return;
