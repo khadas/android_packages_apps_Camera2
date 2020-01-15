@@ -428,14 +428,6 @@ public class CaptureModule extends CameraModule implements
         mDisplayRotation = CameraUtil.getDisplayRotation();
         mCameraFacing = getFacingFromCameraId(
               mSettingsManager.getInteger(SettingsManager.SCOPE_GLOBAL, Keys.KEY_CAMERA_ID));
-        Intent intent = activity.getIntent();
-        String action = intent.getAction();
-        if (MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA.equals(action)
-                || MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA_SECURE.equals(action)) {
-            if (intent.getBooleanExtra("android.intent.extra.USE_FRONT_CAMERA", false) ||
-                    intent.getBooleanExtra("com.google.assistant.extra.USE_FRONT_CAMERA", false))
-                mCameraFacing = Facing.FRONT;
-        }
         mShowErrorAndFinish = !updateCameraCharacteristics();
         if (mShowErrorAndFinish) {
             return;
@@ -709,6 +701,16 @@ public class CaptureModule extends CameraModule implements
     @Override
     public void resume() {
         Log.d(TAG, "resume");
+        Intent intent = mCameraActivity.getIntent();
+        String action = intent.getAction();
+        if (MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA.equals(action)
+                || MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA_SECURE.equals(action)) {
+            if (intent.getBooleanExtra("android.intent.extra.USE_FRONT_CAMERA", false) ||
+                    intent.getBooleanExtra("com.google.assistant.extra.USE_FRONT_CAMERA", false))
+                mCameraFacing = Facing.FRONT;
+            else
+                mCameraFacing = Facing.BACK;
+        }
         if (mShowErrorAndFinish) {
             return;
         }
@@ -1394,6 +1396,39 @@ public class CaptureModule extends CameraModule implements
     }
 
     /**
+     * A.Basic Actions "Take a photo/selfie" can open correct camera.
+     * B.Basic Actions "Take a picture in 3 seconds.", "Take a selfie in 3 seconds.", camera can take photo automatically.
+     * */
+    private void doVoiceAction() {
+        // Called by assistant.
+        Intent intent = mCameraActivity.getIntent();
+        String action = intent.getAction();
+        if (MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA.equals(action)) {
+            boolean shouldeTakePic = mCameraActivity.isVoiceInteractionRoot() &&
+                !intent.getBooleanExtra("com.google.assistant.extra.CAMERA_OPEN_ONLY", false);
+            if (shouldeTakePic) {
+                int timerDuration = intent.getIntExtra("com.google.assistant.extra.TIMER_DURATION_SECONDS", 0);
+                if (timerDuration > 0) {
+                    new Thread() {
+                        @Override
+                        public void run() {
+                            super.run();
+                            try {
+                                Thread.sleep(timerDuration * 1000);
+                                onShutterButtonClick();
+                            } catch (Exception e) {
+                                Log.e(TAG, "Error in SHUTTER_CLICK!" + e.toString());
+                            }
+                        }
+                    }.start();
+                } else {
+                    onShutterButtonClick();
+                }
+            }
+        }
+    }
+
+    /**
      * Open camera and start the preview.
      */
     private void openCameraAndStartPreview() {
@@ -1577,6 +1612,8 @@ public class CaptureModule extends CameraModule implements
                                             // has started.
                                             mUI.initializeZoom(mCamera.getMaxZoom());
                                             mCamera.setFocusStateListener(CaptureModule.this);
+                                            // Add action for voice.
+                                            doVoiceAction();
                                         }
                                     });
                                 }
