@@ -2304,12 +2304,13 @@ public class VideoModule extends CameraModule
             return;
         }
         boolean previewVisible = (mActivity.getPreviewVisibility()
-                == ModuleController.VISIBILITY_VISIBLE);
+                != ModuleController.VISIBILITY_HIDDEN);
 
         SettingsManager settingsManager = mActivity.getSettingsManager();
 
         CameraCapabilities.Stringifier stringifier = mCameraCapabilities.getStringifier();
         CameraCapabilities.FlashMode flashMode;
+        Log.d(TAG, "enableTorchMode enable:" + enable + " , previewVisible:" + previewVisible);
         if (enable && previewVisible) {
             flashMode = stringifier
                 .flashModeFromString(settingsManager.getString(mAppController.getCameraScope(),
@@ -2317,6 +2318,7 @@ public class VideoModule extends CameraModule
         } else {
             flashMode = CameraCapabilities.FlashMode.OFF;
         }
+        Log.d(TAG, "flashMode:" + flashMode);
         if (mCameraCapabilities.supports(flashMode)) {
             mCameraSettings.setFlashMode(flashMode);
         }
@@ -2338,7 +2340,7 @@ public class VideoModule extends CameraModule
     @Override
     public void onPreviewVisibilityChanged(int visibility) {
         if (mPreviewing) {
-            enableTorchMode(visibility == ModuleController.VISIBILITY_VISIBLE);
+            enableTorchMode(visibility != ModuleController.VISIBILITY_HIDDEN);
         }
     }
 
