@@ -1250,7 +1250,7 @@ public class VideoModule extends CameraModule
         String filename = title + convertOutputFormatToFileExt(outputFileFormat);
         String mime = convertOutputFormatToMimeType(outputFileFormat);
         String path = Storage.DIRECTORY + '/' + filename;
-        String tmpPath = path + ".tmp";
+        String tmpPath = path;
         mCurrentVideoValues = new ContentValues(9);
         mCurrentVideoValues.put(Video.Media.TITLE, title);
         mCurrentVideoValues.put(Video.Media.DISPLAY_NAME, filename);
