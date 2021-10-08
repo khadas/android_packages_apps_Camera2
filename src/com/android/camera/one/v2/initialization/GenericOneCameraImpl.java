@@ -185,6 +185,6 @@ class GenericOneCameraImpl implements OneCamera {
 
     @Override
     public Size pickPreviewSize(Size pictureSize, Activity context) {
-        return mPreviewSizeSelector.pickPreviewSize(pictureSize);
+        return mPreviewSizeSelector.pickPreviewSize(pictureSize, context);
     }
 }

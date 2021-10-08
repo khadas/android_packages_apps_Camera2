@@ -21,10 +21,12 @@ import android.Manifest;
 import android.animation.Animator;
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.Dialog;
 import android.app.KeyguardManager.KeyguardDismissCallback;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
+import android.content.ComponentCallbacks;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -39,6 +41,7 @@ import android.graphics.RectF;
 import android.graphics.SurfaceTexture;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.hardware.Camera;
 import android.net.Uri;
 import android.nfc.NfcAdapter;
 import android.nfc.NfcAdapter.CreateBeamUrisCallback;
@@ -46,9 +49,15 @@ import android.nfc.NfcEvent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.os.StrictMode;
+import android.os.storage.DiskInfo;
+import android.os.storage.StorageManager;
+import android.os.storage.StorageVolume;
+import android.os.storage.VolumeInfo;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.text.TextUtils;
@@ -60,6 +69,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
+import android.view.OrientationEventListener;
 import android.view.View;
 import android.view.View.OnSystemUiVisibilityChangeListener;
 import android.view.ViewGroup;
@@ -68,6 +78,7 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ShareActionProvider;
+import android.widget.Toast;
 
 import com.android.camera.app.AppController;
 import com.android.camera.app.CameraAppUI;
@@ -81,6 +92,7 @@ import com.android.camera.app.MemoryManager;
 import com.android.camera.app.MemoryQuery;
 import com.android.camera.app.ModuleManager;
 import com.android.camera.app.ModuleManager.ModuleAgent;
+import com.android.camera.app.OrientationManager.DeviceOrientation;
 import com.android.camera.app.ModuleManagerImpl;
 import com.android.camera.app.MotionManager;
 import com.android.camera.app.OrientationManager;
@@ -95,6 +107,7 @@ import com.android.camera.data.FixedLastProxyAdapter;
 import com.android.camera.data.GlideFilmstripManager;
 import com.android.camera.data.LocalFilmstripDataAdapter;
 import com.android.camera.data.LocalFilmstripDataAdapter.FilmstripItemListener;
+import com.android.camera.data.Location;
 import com.android.camera.data.MediaDetails;
 import com.android.camera.data.MetadataLoader;
 import com.android.camera.data.PhotoDataFactory;
@@ -104,6 +117,7 @@ import com.android.camera.data.PlaceholderItem;
 import com.android.camera.data.SessionItem;
 import com.android.camera.data.VideoDataFactory;
 import com.android.camera.data.VideoItemFactory;
+import com.android.camera.debug.DebugPropertyHelper;
 import com.android.camera.debug.Log;
 import com.android.camera.device.ActiveCameraDeviceTracker;
 import com.android.camera.device.CameraId;
@@ -141,6 +155,7 @@ import com.android.camera.ui.PreviewStatusListener;
 import com.android.camera.util.ApiHelper;
 import com.android.camera.util.Callback;
 import com.android.camera.util.CameraUtil;
+import com.android.camera.util.AndroidContext;
 import com.android.camera.util.GalleryHelper;
 import com.android.camera.util.GcamHelper;
 import com.android.camera.util.GoogleHelpHelper;
@@ -155,6 +170,7 @@ import com.android.ex.camera2.portability.CameraAgent;
 import com.android.ex.camera2.portability.CameraAgentFactory;
 import com.android.ex.camera2.portability.CameraExceptionHandler;
 import com.android.ex.camera2.portability.CameraSettings;
+import com.android.ex.camera2.portability.CameraCapabilities;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.GlideBuilder;
 import com.bumptech.glide.MemoryCategory;
@@ -171,12 +187,14 @@ import com.google.common.logging.eventprotos.NavigationChange;
 import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
 public class CameraActivity extends QuickActivity
         implements AppController, CameraAgent.CameraOpenCallback,
-        ShareActionProvider.OnShareTargetSelectedListener {
+        ShareActionProvider.OnShareTargetSelectedListener,
+        OrientationManager.OnOrientationChangeListener {
 
     private static final Log.Tag TAG = new Log.Tag("CameraActivity");
 
@@ -238,8 +256,10 @@ public class CameraActivity extends QuickActivity
     private OnScreenHint mStorageHint;
     private final Object mStorageSpaceLock = new Object();
     private long mStorageSpaceBytes = Storage.LOW_STORAGE_THRESHOLD_BYTES;
+    private long mOtherStorageSpaceBytes = Storage.LOW_STORAGE_THRESHOLD_BYTES;
     private boolean mAutoRotateScreen;
     private boolean mSecureCamera;
+    private int mLastRawOrientation = OrientationEventListener.ORIENTATION_UNKNOWN;
     private OrientationManagerImpl mOrientationManager;
     private LocationManager mLocationManager;
     private ButtonManager mButtonManager;
@@ -252,6 +272,8 @@ public class CameraActivity extends QuickActivity
     private FatalErrorHandler mFatalErrorHandler;
     private boolean mHasCriticalPermissions;
 
+    private boolean mIsNeedReLoadImage = false;
+
     private final Uri[] mNfcPushUris = new Uri[1];
 
     private FilmstripContentObserver mLocalImagesObserver;
@@ -263,11 +285,14 @@ public class CameraActivity extends QuickActivity
     private boolean mPaused;
     private CameraAppUI mCameraAppUI;
 
+    private CameraCapabilities mCameraCapabilities;
+
     private Intent mGalleryIntent;
     private long mOnCreateTime;
 
     private Menu mActionBarMenu;
     private Preloader<Integer, AsyncTask> mPreloader;
+    private AsyncTask<Void, Void, Long> mUpdateStorageTask;
 
     /** Can be used to play custom sounds. */
     private SoundPlayer mSoundPlayer;
@@ -503,24 +528,59 @@ public class CameraActivity extends QuickActivity
 
     @Override
     public void onCameraOpened(CameraAgent.CameraProxy camera) {
-        Log.v(TAG, "onCameraOpened");
+        Log.v(TAG, "onCameraOpened activity:" + this);
         if (mPaused) {
             // We've paused, but just asynchronously opened the camera. Close it
             // because we should be releasing the camera when paused to allow
             // other apps to access it.
             Log.v(TAG, "received onCameraOpened but activity is paused, closing Camera");
-            mCameraController.closeCamera(false);
+            mCameraController.closeCamera(true);
             return;
         }
 
         if (!mModuleManager.getModuleAgent(mCurrentModeIndex).requestAppForCamera()) {
             // We shouldn't be here. Just close the camera and leave.
             mCameraController.closeCamera(false);
-            throw new IllegalStateException("Camera opened but the module shouldn't be " +
+            Log.e(TAG,"Camera opened but the module shouldn't be " +
                     "requesting");
+            return;
         }
+
+        Camera cam = camera.getCamera();
+        // If the camera device is null, the camera proxy is stale
+        // should be ignored.
+        if (cam != null) {
+            Log.w(TAG, "null camera within proxy, maybe api2");
+			if (cam.isReleased()) {
+                Log.d(TAG, "camera has released!!!!");
+                return;
+            }
+        }
+		
+		mCameraCapabilities = camera.getCapabilities();
+
         if (mCurrentModule != null) {
-            resetExposureCompensationToDefault(camera);
+		    if (cam != null) {
+            boolean result = false;
+            result = resetExposureCompensationToDefault(camera);
+            if (!result) return;
+            result = resetWhiteBalanceToDefault(camera);
+            if (!result) return;
+            result = resetSceneToDefault(camera);
+            if (!result) return;
+            result = resetColorEffectToDefault(camera);
+            if (!result) return;
+            result = resetSaturationToDefault(camera);
+            if (!result) return;
+            result = resetContrastToDefault(camera);
+            if (!result) return;
+            result = resetSharpnessToDefault(camera);
+            if (!result) return;
+            result = resetBrightnessToDefault(camera);
+            if (!result) return;
+            result = resetHueToDefault(camera);
+            if (!result) return;
+			}
             try {
                 mCurrentModule.onCameraAvailable(camera);
             } catch (RuntimeException ex) {
@@ -532,13 +592,71 @@ public class CameraActivity extends QuickActivity
         }
         Log.v(TAG, "invoking onChangeCamera");
         mCameraAppUI.onChangeCamera();
+        syncCameraSoundSetting(camera);
     }
 
-    private void resetExposureCompensationToDefault(CameraAgent.CameraProxy camera) {
+    private boolean resetExposureCompensationToDefault(CameraAgent.CameraProxy camera) {
         // Reset the exposure compensation before handing the camera to module.
         CameraSettings cameraSettings = camera.getSettings();
         cameraSettings.setExposureCompensationIndex(0);
-        camera.applySettings(cameraSettings);
+		if (mCameraCapabilities.supports(cameraSettings))
+        	return camera.applySettings(cameraSettings);
+		else
+		    return true;
+    }
+
+    private boolean resetWhiteBalanceToDefault(CameraAgent.CameraProxy camera) {
+        CameraSettings cameraSettings = camera.getSettings();
+        cameraSettings.setWhiteBalance(CameraCapabilities.WhiteBalance.AUTO);
+		if (mCameraCapabilities.supports(CameraCapabilities.WhiteBalance.AUTO))
+        	return camera.applySettings(cameraSettings);
+		else
+		    return true;
+    }
+
+    private boolean resetSceneToDefault(CameraAgent.CameraProxy camera) {
+        CameraSettings cameraSettings = camera.getSettings();
+        cameraSettings.setSceneMode(CameraCapabilities.SceneMode.AUTO);
+        if (mCameraCapabilities.supports(CameraCapabilities.SceneMode.AUTO))
+        	return camera.applySettings(cameraSettings);
+		else
+		    return true;
+    }
+
+    private boolean resetColorEffectToDefault(CameraAgent.CameraProxy camera) {
+        CameraSettings cameraSettings = camera.getSettings();
+        cameraSettings.setColorEffect(Camera.Parameters.EFFECT_NONE);
+        return camera.applySettings(cameraSettings);
+    }
+
+    private boolean resetSaturationToDefault(CameraAgent.CameraProxy camera) {
+        CameraSettings cameraSettings = camera.getSettings();
+        cameraSettings.setSaturation("normal");
+        return camera.applySettings(cameraSettings);
+    }
+
+    private boolean resetContrastToDefault(CameraAgent.CameraProxy camera) {
+        CameraSettings cameraSettings = camera.getSettings();
+        cameraSettings.setContrast("normal");
+        return camera.applySettings(cameraSettings);
+    }
+
+    private boolean resetSharpnessToDefault(CameraAgent.CameraProxy camera) {
+        CameraSettings cameraSettings = camera.getSettings();
+        cameraSettings.setSharpness("normal");
+        return camera.applySettings(cameraSettings);
+    }
+
+    private boolean resetBrightnessToDefault(CameraAgent.CameraProxy camera) {
+        CameraSettings cameraSettings = camera.getSettings();
+        cameraSettings.setBrightness("normal");
+        return camera.applySettings(cameraSettings);
+    }
+
+    private boolean resetHueToDefault(CameraAgent.CameraProxy camera) {
+        CameraSettings cameraSettings = camera.getSettings();
+        cameraSettings.setHue("normal");
+        return camera.applySettings(cameraSettings);
     }
 
     @Override
@@ -642,6 +760,11 @@ public class CameraActivity extends QuickActivity
 
                 @Override
                 public void onFilmstripShown() {
+                    Log.i(TAG, "onFilmstripShown()");
+                    if (mCameraAppUI != null && !mCameraAppUI.isModeCoverHide()) {
+                        Log.w(TAG, "=====mode cover not hide, not show filmstrip=====");
+                        return;
+                    }
                     mFilmstripVisible = true;
                     mCameraAppUI.hideCaptureIndicator();
                     UsageStatistics.instance().changeScreen(currentUserInterfaceMode(),
@@ -894,7 +1017,8 @@ public class CameraActivity extends QuickActivity
                     }
                     Optional<SessionItem> newData = SessionItem.create(getApplicationContext(), uri);
                     if (newData.isPresent()) {
-                        mDataAdapter.addOrUpdate(newData.get());
+                        if (mDataAdapter != null)
+                            mDataAdapter.addOrUpdate(newData.get());
                     }
                 }
 
@@ -1162,6 +1286,12 @@ public class CameraActivity extends QuickActivity
     }
 
     @Override
+    public void setShutterLongClickEnabled(boolean enabled) {
+        // TODO Auto-generated method stub
+        mCameraAppUI.setShutterButtonLongClickEnabled(enabled);
+    }
+
+    @Override
     public boolean isShutterEnabled() {
         return mCameraAppUI.isShutterButtonEnabled();
     }
@@ -1248,15 +1378,23 @@ public class CameraActivity extends QuickActivity
 
     @Override
     public void notifyNewMedia(Uri uri) {
+        /*if (mPaused) {
+            return;
+        }*/
         // TODO: This method is running on the main thread. Also we should get
         // rid of that AsyncTask.
 
         updateStorageSpaceAndHint(null);
         ContentResolver cr = getContentResolver();
         String mimeType = cr.getType(uri);
+        Log.v(TAG,"===============notifyNewMedia===================");
+        if(mimeType == null) {
+            Log.e(TAG, "Can't find video data in content resolver:" + uri);
+            return;
+        }
         FilmstripItem newData = null;
         if (FilmstripItemUtils.isMimeTypeVideo(mimeType)) {
-            sendBroadcast(new Intent(CameraUtil.ACTION_NEW_VIDEO, uri));
+            sendBroadcast(new Intent(CameraUtil.ACTION_NEW_VIDEO, uri).setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION));
             newData = mVideoItemFactory.queryContentUri(uri);
             if (newData == null) {
                 Log.e(TAG, "Can't find video data in content resolver:" + uri);
@@ -1296,12 +1434,14 @@ public class CameraActivity extends QuickActivity
                     AsyncTask.THREAD_POOL_EXECUTOR.execute(new Runnable() {
                         @Override
                         public void run() {
+                            Log.d(TAG, "generateThumbnail onPostExecute");
                             final Optional<Bitmap> bitmap = data.generateThumbnail(
                                     mAboveFilmstripControlLayout.getWidth(),
                                     mAboveFilmstripControlLayout.getMeasuredHeight());
                             if (bitmap.isPresent()) {
                                 indicateCapture(bitmap.get(), 0);
                             }
+                            Log.d(TAG, "generateThumbnail onPostExecute end");
                         }
                     });
                 }
@@ -1336,7 +1476,7 @@ public class CameraActivity extends QuickActivity
 
     private void removeItemAt(int index) {
         mDataAdapter.removeAt(index);
-        if (mDataAdapter.getTotalNumber() > 0) {
+        if (mDataAdapter.getTotalNumber() >= 1) {
             showUndoDeletionBar();
         } else {
             // If camera preview is the only view left in filmstrip,
@@ -1363,6 +1503,21 @@ public class CameraActivity extends QuickActivity
                 mResetToPreviewOnResume = false;
                 new GoogleHelpHelper(this).launchGoogleHelp();
                 return true;
+            case R.id.action_show_on_map:
+                int currentDataId = mFilmstripController.getCurrentAdapterIndex();
+                if (currentDataId < 0) {
+                    return false;
+                }
+                final FilmstripItem filmstripitem = mDataAdapter.getItemAt(currentDataId);
+                if (filmstripitem != null) {
+                    final FilmstripItemData data = filmstripitem.getData();
+                    if (data != null) {
+                        Location location = data.getLocation();
+                        if (location != null && location.isValid())
+                            CameraUtil.showOnMap(this, location);
+                    }
+                }
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -1388,6 +1543,7 @@ public class CameraActivity extends QuickActivity
                 public void onCameraError(int errorCode) {
                     // Not a fatal error. only do Log.e().
                     Log.e(TAG, "Camera error callback. error=" + errorCode);
+                    onFatalError();
                 }
                 @Override
                 public void onCameraException(
@@ -1424,11 +1580,13 @@ public class CameraActivity extends QuickActivity
 
     @Override
     public void onNewIntentTasks(Intent intent) {
-        onModeSelected(getModeIndex());
+        if (mCameraController.getNumberOfCameras() > 0)
+            onModeSelected(getModeIndex());
     }
 
     @Override
     public void onCreateTasks(Bundle state) {
+        AndroidContext.initialize(this);
         Profile profile = mProfiler.create("CameraActivity.onCreateTasks").start();
         CameraPerformanceTracker.onEvent(CameraPerformanceTracker.ACTIVITY_START);
         mOnCreateTime = System.currentTimeMillis();
@@ -1436,6 +1594,7 @@ public class CameraActivity extends QuickActivity
         mMainHandler = new MainHandler(this, getMainLooper());
         mLocationManager = new LocationManager(mAppContext, shouldUseNoOpLocation());
         mOrientationManager = new OrientationManagerImpl(this, mMainHandler);
+        mOrientationManager.addOnOrientationChangeListener(this);
         mSettingsManager = getServices().getSettingsManager();
         mSoundPlayer = new SoundPlayer(mAppContext);
         mFeatureConfig = OneCameraFeatureConfigCreator.createDefault(getContentResolver(),
@@ -1569,6 +1728,7 @@ public class CameraActivity extends QuickActivity
         } else {
             mSecureCamera = intent.getBooleanExtra(SECURE_CAMERA_EXTRA, false);
         }
+        mModeListView.setSecureCamera(mSecureCamera);
 
         if (mSecureCamera) {
             // Change the window flags so that secure camera can show when
@@ -1593,6 +1753,9 @@ public class CameraActivity extends QuickActivity
         }
         mCameraAppUI = new CameraAppUI(this,
                 (MainActivityLayout) findViewById(R.id.activity_root_view), isCaptureIntent());
+        CaptureLayoutHelper captureLayoutHelper = mCameraAppUI.getCaptureLayoutHelper();
+        if (captureLayoutHelper != null)
+            captureLayoutHelper.setActivity(this);
 
         mCameraAppUI.setFilmstripBottomControlsListener(mMyFilmstripBottomControlListener);
 
@@ -1788,8 +1951,8 @@ public class CameraActivity extends QuickActivity
         }
     }
 
-    private int getPreviewVisibility() {
-        if (mFilmstripCoversPreview) {
+    public int getPreviewVisibility() {
+        if (mFilmstripVisible) {
             return ModuleController.VISIBILITY_HIDDEN;
         } else if (mModeListVisible){
             return ModuleController.VISIBILITY_COVERED;
@@ -1805,6 +1968,103 @@ public class CameraActivity extends QuickActivity
         WindowManager.LayoutParams winParams = win.getAttributes();
         winParams.rotationAnimation = rotationAnimation;
         win.setAttributes(winParams);
+    }
+
+    private void setMaxScreenBright() {
+        Window win = getWindow();
+        WindowManager.LayoutParams winParams = win.getAttributes();
+        Log.i(TAG, "screenBrightness = " + winParams.screenBrightness);
+        winParams.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_FULL;
+        win.setAttributes(winParams);
+    }
+
+    private int mOrignalScreenBrightMode = -1;
+    private int mOrignalScreenBrightness = -1;
+    private void setScreenBrightAdjust() {
+        mOrignalScreenBrightMode = getScreenMode();
+        mOrignalScreenBrightness = getScreenBrightness();
+        Log.i(TAG, "mOrignalScreenBrightMode = " + mOrignalScreenBrightMode
+                + ",mOrignalScreenBrightness = " + mOrignalScreenBrightness);
+        if (mOrignalScreenBrightMode == Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC)
+            setScreenMode(Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL);
+        if (mOrignalScreenBrightness < ((int) (255 * 0.9f)))
+            saveScreenBrightness((int) (255 * 0.9f));
+    }
+
+    private Runnable mScreenBrightAdjust = new Runnable() {
+        
+        @Override
+        public void run() {
+            // TODO Auto-generated method stub
+            setScreenBrightAdjust();
+        }
+    };
+
+    private void restoreScreenBright() {
+        mMainHandler.removeCallbacks(mScreenBrightAdjust);
+        setScreenMode(mOrignalScreenBrightMode);
+        saveScreenBrightness(mOrignalScreenBrightness);
+    }
+
+    /** 
+     * getCurrentScreenBrightMode
+     * SCREEN_BRIGHTNESS_MODE_AUTOMATIC=1 auto
+     * SCREEN_BRIGHTNESS_MODE_MANUAL=0  manual
+     */  
+    private int getScreenMode() {
+        int screenMode=0;
+        try {
+            screenMode = Settings.System.getInt(getContentResolver(),
+                    Settings.System.SCREEN_BRIGHTNESS_MODE);
+        }
+        catch (Exception localException){
+            Log.e(TAG, "getScreenMode error:" + localException);
+        }
+        return screenMode;  
+    }  
+
+    /** 
+     * getScreenBrightness  0--255
+     */  
+    private int getScreenBrightness() {
+        int screenBrightness = 255;
+        try {
+            screenBrightness = Settings.System.getInt(getContentResolver(),
+                    Settings.System.SCREEN_BRIGHTNESS);
+        }
+        catch (Exception localException){
+            Log.e(TAG, "getScreenBrightness error:" + localException);
+        }
+        return screenBrightness;  
+    }
+
+    /** 
+     * setScreenMode
+     * SCREEN_BRIGHTNESS_MODE_AUTOMATIC=1 auto 
+     * SCREEN_BRIGHTNESS_MODE_MANUAL=0  manual 
+     */
+    private void setScreenMode(int paramInt){
+        if (paramInt < 0) return;
+        try{  
+            Settings.System.putInt(getContentResolver(),
+                    Settings.System.SCREEN_BRIGHTNESS_MODE, paramInt);
+        }catch (Exception localException){
+            Log.e(TAG, "setScreenMode error:" + localException);
+        }
+    }
+
+    /** 
+     * saveScreenBrightness  0--255
+     */  
+    private void saveScreenBrightness(int paramInt){
+        if (paramInt < 0) return;
+        try{  
+            Settings.System.putInt(getContentResolver(),
+                    Settings.System.SCREEN_BRIGHTNESS, paramInt);
+        }
+        catch (Exception localException) {
+            Log.e(TAG, "saveScreenBrightness error:" + localException);
+        }
     }
 
     @Override
@@ -1834,6 +2094,7 @@ public class CameraActivity extends QuickActivity
     public void onPauseTasks() {
         CameraPerformanceTracker.onEvent(CameraPerformanceTracker.ACTIVITY_PAUSE);
         Profile profile = mProfiler.create("CameraActivity.onPause").start();
+        restoreScreenBright();
 
         /*
          * Save the last module index after all secure camera and icon launches,
@@ -1878,6 +2139,9 @@ public class CameraActivity extends QuickActivity
         // button. Let's just kill the process.
         if (mCameraFatalError && !isFinishing()) {
             Log.v(TAG, "onPause when camera is in fatal state, call Activity.finish()");
+            mCameraFatalError = false;
+            CameraUtil.dismissErrorDialog();
+            mCameraController.closeCamera(true);
             finish();
         } else {
             // Close the camera and wait for the operation done.
@@ -1932,7 +2196,8 @@ public class CameraActivity extends QuickActivity
         }
 
         if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED &&
-                checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+                checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED &&
+                checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             mHasCriticalPermissions = true;
         } else {
             mHasCriticalPermissions = false;
@@ -1946,6 +2211,7 @@ public class CameraActivity extends QuickActivity
             // TODO: Convert PermissionsActivity into a dialog so we
             // don't lose the state of CameraActivity.
             Intent intent = new Intent(this, PermissionsActivity.class);
+            intent.setAction(getIntent().getAction());
             startActivity(intent);
             finish();
         }
@@ -2003,20 +2269,24 @@ public class CameraActivity extends QuickActivity
         Profile profile = mProfiler.create("CameraActivity.resume").start();
         CameraPerformanceTracker.onEvent(CameraPerformanceTracker.ACTIVITY_RESUME);
         Log.v(TAG, "Build info: " + Build.DISPLAY);
+        updateExternalSD(CameraActivity.this);
+        registerMediaMountListener();
         updateStorageSpaceAndHint(null);
+        initExposure();
 
         mLastLayoutOrientation = getResources().getConfiguration().orientation;
 
         // TODO: Handle this in OrientationManager.
         // Auto-rotate off
-        if (Settings.System.getInt(getContentResolver(),
-                Settings.System.ACCELEROMETER_ROTATION, 0) == 0) {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
-            mAutoRotateScreen = false;
-        } else {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR);
-            mAutoRotateScreen = true;
-        }
+//        if (Settings.System.getInt(getContentResolver(),
+//                Settings.System.ACCELEROMETER_ROTATION, 0) == 0) {
+//            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+//            mAutoRotateScreen = false;
+//        } else {
+//            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR);
+//            mAutoRotateScreen = true;
+//        }
+        updateActivityOrientation();
 
         // Foreground event logging.  ACTION_STILL_IMAGE_CAMERA and
         // INTENT_ACTION_STILL_IMAGE_CAMERA_SECURE are double logged due to
@@ -2071,7 +2341,8 @@ public class CameraActivity extends QuickActivity
         mCurrentModule.hardResetSettings(mSettingsManager);
 
         profile.mark();
-        mCurrentModule.resume();
+        if (mCameraController.getNumberOfCameras() > 0)
+            mCurrentModule.resume();
         UsageStatistics.instance().changeScreen(currentUserInterfaceMode(),
                 NavigationChange.InteractionCause.BUTTON);
         setSwipingEnabled(true);
@@ -2116,12 +2387,26 @@ public class CameraActivity extends QuickActivity
                     new FilmstripContentObserver.ChangeListener() {
                 @Override
                 public void onChange() {
-                    mDataAdapter.requestLoadNewPhotos();
+                    if (!mSecureCamera && !isCaptureIntent()) {
+                        Log.d(TAG, "LocalImagesObserver changed mDataAdapter.requestLoad");
+                        mIsNeedReLoadImage = false;
+                        mDataAdapter.requestLoad(new Callback<Void>() {
+                            @Override
+                            public void onCallback(Void result) {
+                                fillTemporarySessions();
+                            }
+                        });
+                    } else {
+                        Log.d(TAG, "LocalImagesObserver changed mDataAdapter.requestLoadNewPhotos");
+                        mDataAdapter.requestLoadNewPhotos();
+                    }
+                    updateStorageSpaceAndHint(null);
                 }
             });
         }
 
         keepScreenOnForAWhile();
+        mMainHandler.postDelayed(mScreenBrightAdjust, 100);
 
         // Lights-out mode at all times.
         final View rootView = findViewById(R.id.activity_root_view);
@@ -2149,6 +2434,7 @@ public class CameraActivity extends QuickActivity
         updatePreviewRendering(previewVisibility);
 
         mMotionManager.start();
+        mCameraAppUI.checkOrientation();
         profile.stop();
     }
 
@@ -2177,7 +2463,8 @@ public class CameraActivity extends QuickActivity
          * Right now we exclude capture intents from this logic.
          */
         int modeIndex = getModeIndex();
-        if (!isCaptureIntent() && mCurrentModeIndex != modeIndex) {
+        if (!isCaptureIntent() && mCurrentModeIndex != modeIndex
+                && mCameraController.getNumberOfCameras() > 0) {
             onModeSelected(modeIndex);
         }
 
@@ -2193,6 +2480,9 @@ public class CameraActivity extends QuickActivity
         mPanoramaViewHelper.onStop();
 
         mLocationManager.disconnect();
+        CameraUtil.cleanOrientationParameters();
+
+        unregisterMediaMountListener();
     }
 
     @Override
@@ -2203,6 +2493,21 @@ public class CameraActivity extends QuickActivity
 
         // Ensure anything that checks for "isPaused" returns true.
         mPaused = true;
+        if (mFilmstripController != null)
+            mFilmstripController.setDataAdapter(null);
+        if (mDataAdapter != null) {
+            mDataAdapter.setListener(null);
+            mDataAdapter.setLocalDataListener(null);
+            mDataAdapter = null;
+        }
+        if (mOrientationManager != null){
+            mOrientationManager.removeOnOrientationChangeListener(this);
+        }
+        if (mCameraAppUI != null) {
+            mCameraAppUI.getFilmstripContentPanel().setFilmstripListener(null);
+            mCameraAppUI.setFilmstripBottomControlsListener(null);
+        }
+        getApplicationContext().unregisterComponentCallbacks((ComponentCallbacks) mMemoryManager);
 
         mSettingsManager.removeAllListeners();
         if (mCameraController != null) {
@@ -2232,6 +2537,9 @@ public class CameraActivity extends QuickActivity
         if (mFirstRunDialog != null) {
             mFirstRunDialog.dismiss();
         }
+		if (mCurrentModule != null) {
+            mCurrentModule.destroy();
+        }
         CameraAgentFactory.recycle(CameraAgentFactory.CameraApi.API_1);
         CameraAgentFactory.recycle(CameraAgentFactory.CameraApi.AUTO);
     }
@@ -2253,6 +2561,8 @@ public class CameraActivity extends QuickActivity
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (ActivityManager.isUserAMonkey())
+            return super.onKeyDown(keyCode, event);
         if (!mFilmstripVisible) {
             if (mCurrentModule.onKeyDown(keyCode, event)) {
                 return true;
@@ -2271,18 +2581,32 @@ public class CameraActivity extends QuickActivity
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (ActivityManager.isUserAMonkey())
+            return super.onKeyUp(keyCode, event);
         if (!mFilmstripVisible) {
             // If a module is in the middle of capture, it should
             // consume the key event.
             if (mCurrentModule.onKeyUp(keyCode, event)) {
+                Log.i(TAG, "onKeyUp->mCurrentModule->onKeyup->true");
                 return true;
             } else if (keyCode == KeyEvent.KEYCODE_MENU
                     || keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
                 // Let the mode list view consume the event.
                 mCameraAppUI.openModeList();
                 return true;
+            } else if(keyCode == KeyEvent.KEYCODE_DPAD_DOWN){
+                Log.i(TAG, "onKeyUp->keycode_dpad_down");
+                if(mModeListView.getVisibility() == View.VISIBLE && mCurrentModeIndex == 0){
+                    mModeListView.getListView().getChildAt(1).performClick();
+                }
+            } else if(keyCode == KeyEvent.KEYCODE_DPAD_UP){
+                Log.i(TAG, "onKeyUp->keycode_dpad_up");
+                if(mModeListView.getVisibility() == View.VISIBLE && mCurrentModeIndex == 1){
+                    mModeListView.getListView().getChildAt(0).performClick();
+                }
             } else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
-                mCameraAppUI.showFilmstrip();
+                if (mDataAdapter.getTotalNumber() > 0)
+                    mCameraAppUI.showFilmstrip();
                 return true;
             }
         } else {
@@ -2301,11 +2625,33 @@ public class CameraActivity extends QuickActivity
         return super.onKeyUp(keyCode, event);
     }
 
+    private int mBackKeyPressTimes = 0;
     @Override
     public void onBackPressed() {
         if (!mCameraAppUI.onBackPressed()) {
             if (!mCurrentModule.onBackPressed()) {
-                super.onBackPressed();
+                if (ActivityManager.isUserAMonkey()) {
+                    super.onBackPressed();
+                    return;
+                }
+                if (mBackKeyPressTimes == 0) {
+                    Toast.makeText(this, R.string.back_to_exit_msg, Toast.LENGTH_SHORT).show();
+                    mBackKeyPressTimes++;
+                    mMainHandler.postDelayed(new Runnable() {
+                        
+                        @Override
+                        public void run() {
+                            // TODO Auto-generated method stub
+                            mBackKeyPressTimes = 0;
+                        }
+                    }, 2000);
+                    return;
+                }
+                if (mCameraAppUI != null) {
+                    mCameraAppUI.pauseTextViewHelper();
+                }
+                if (mBackKeyPressTimes >= 1)
+                    super.onBackPressed();
             }
         }
     }
@@ -2326,6 +2672,9 @@ public class CameraActivity extends QuickActivity
         if (mGalleryIntent != null) {
             CharSequence appName =  IntentHelper.getGalleryAppName(mAppContext, mGalleryIntent);
             if (appName != null) {
+                if(appName.equals("Gallery")){
+                    appName = getString(R.string.gallery_name);
+                }
                 MenuItem menuItem = menu.add(appName);
                 menuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
                 menuItem.setIntent(mGalleryIntent);
@@ -2347,6 +2696,7 @@ public class CameraActivity extends QuickActivity
             // lockscreen does not reliably work, only show help if not secure
             menu.removeItem(R.id.action_help_and_feedback);
         }
+        menu.removeItem(R.id.action_help_and_feedback);
 
         return super.onPrepareOptionsMenu(menu);
     }
@@ -2376,11 +2726,14 @@ public class CameraActivity extends QuickActivity
          * e.g. don't call this then immediately call getStorageSpaceBytes().
          * Instead, pass in an OnStorageUpdateDoneListener.
          */
-        (new AsyncTask<Void, Void, Long>() {
+        if (mUpdateStorageTask != null) 
+            mUpdateStorageTask.cancel(true);
+        mUpdateStorageTask = (new AsyncTask<Void, Void, Long>() {
             @Override
             protected Long doInBackground(Void ... arg) {
                 synchronized (mStorageSpaceLock) {
                     mStorageSpaceBytes = Storage.instance().getAvailableSpace();
+                    //mOtherStorageSpaceBytes = Storage.instance().getOtherAvailableSpace();
                     return mStorageSpaceBytes;
                 }
             }
@@ -2397,6 +2750,7 @@ public class CameraActivity extends QuickActivity
                 }
             }
         }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        Log.d(TAG, "mUpdateStorageTask = " + mUpdateStorageTask);
     }
 
     protected void updateStorageHint(long storageSpace) {
@@ -2405,6 +2759,7 @@ public class CameraActivity extends QuickActivity
         }
 
         String message = null;
+        boolean changeStorage = false;
         if (storageSpace == Storage.UNAVAILABLE) {
             message = getString(R.string.no_storage);
         } else if (storageSpace == Storage.PREPARING) {
@@ -2412,7 +2767,14 @@ public class CameraActivity extends QuickActivity
         } else if (storageSpace == Storage.UNKNOWN_SIZE) {
             message = getString(R.string.access_sd_fail);
         } else if (storageSpace <= Storage.LOW_STORAGE_THRESHOLD_BYTES) {
-            message = getString(R.string.spaceIsLow_content);
+            /*if (mOtherStorageSpaceBytes > Storage.LOW_STORAGE_THRESHOLD_BYTES) {
+                if (Storage.DEFAULT_DIRECTORY.equals(Storage.DIRECTORY))
+                    message = getString(R.string.flash_spaceIsLow_content);
+                else
+                    message = getString(R.string.exsd_spaceIsLow_content);
+                changeStorage = true;
+            } else*/
+                message = getString(R.string.spaceIsLow_content);
         }
 
         if (message != null) {
@@ -2425,8 +2787,14 @@ public class CameraActivity extends QuickActivity
             mStorageHint.show();
             UsageStatistics.instance().storageWarning(storageSpace);
 
-            // Disable all user interactions,
-            mCameraAppUI.setDisableAllUserInteractions(true);
+            if (changeStorage) {
+                mCameraAppUI.enableModeOptions();
+                mCameraAppUI.setShutterButtonEnabled(false);
+                mCameraAppUI.setSwipeEnabled(true);
+                mCameraAppUI.hideModeListView();
+            } else 
+                // Disable all user interactions,
+                mCameraAppUI.setDisableAllUserInteractions(true);
         } else if (mStorageHint != null) {
             mStorageHint.cancel();
             mStorageHint = null;
@@ -2477,6 +2845,7 @@ public class CameraActivity extends QuickActivity
 
     @Override
     public void onModeSelected(int modeIndex) {
+        Log.i(TAG,"onModeSelected = " + modeIndex);
         if (mCurrentModeIndex == modeIndex) {
             return;
         }
@@ -2499,6 +2868,7 @@ public class CameraActivity extends QuickActivity
         mCameraAppUI.resetBottomControls(mCurrentModule, modeIndex);
         mCameraAppUI.addShutterListener(mCurrentModule);
         openModule(mCurrentModule);
+        mCurrentModule.onOrientationChanged(mLastRawOrientation);
         // Store the module index so we can use it the next time the Camera
         // starts up.
         mSettingsManager.set(SettingsManager.SCOPE_GLOBAL,
@@ -2573,6 +2943,10 @@ public class CameraActivity extends QuickActivity
 
     @Override
     public SettingsManager getSettingsManager() {
+        if (mSettingsManager == null) {
+            Log.i(TAG, "reget mSettingsManager");
+            mSettingsManager = getServices().getSettingsManager();
+        }
         return mSettingsManager;
     }
 
@@ -2808,6 +3182,27 @@ public class CameraActivity extends QuickActivity
         }
     }
 
+    @Override
+    public void onOrientationChanged(OrientationManager orientationManager,
+            DeviceOrientation orientation) {
+        // TODO Auto-generated method stub
+        if (orientation.getDegrees() != mLastRawOrientation) {
+            Log.v(TAG, "orientation changed (from:to) " + mLastRawOrientation +
+                    ":" + orientation.getDegrees());
+        }
+
+        // We keep the last known orientation. So if the user first orient
+        // the camera then point the camera to floor or sky, we still have
+        // the correct orientation.
+        if (orientation.getDegrees() == OrientationEventListener.ORIENTATION_UNKNOWN) {
+            return;
+        }
+        mLastRawOrientation = orientation.getDegrees();
+        if (mCurrentModule != null) {
+            mCurrentModule.onOrientationChanged(orientation.getDegrees());
+        }
+    }
+
     /**
      * Enable/disable swipe-to-filmstrip. Will always disable swipe if in
      * capture intent.
@@ -2891,6 +3286,14 @@ public class CameraActivity extends QuickActivity
     @Override
     public void finishActivityWithIntentCanceled() {
         finishActivityWithIntentResult(Activity.RESULT_CANCELED, new Intent());
+    }
+
+    public void syncCameraSoundSetting(CameraAgent.CameraProxy camera) {
+        boolean soundOn = mSettingsManager.getBoolean(SettingsManager.SCOPE_GLOBAL,
+                Keys.KEY_CAMERA_SOUND);
+        Log.i(TAG,"camera sound = " + soundOn);
+        if (camera != null)
+            camera.enableShutterSound(soundOn);
     }
 
     private void finishActivityWithIntentResult(int resultCode, Intent resultIntent) {
@@ -3002,7 +3405,21 @@ public class CameraActivity extends QuickActivity
             showProcessError(sessionManager.getErrorMessageId(contentUri));
         } else {
             filmstripBottomPanel.hideProgressError();
-            hideSessionProgress();
+            CaptureSession session = sessionManager.getSession(contentUri);
+
+            if (session != null) {
+                int sessionProgress = session.getProgress();
+
+                if (sessionProgress < 0) {
+                    hideSessionProgress();
+                } else {
+                    int progressMessageId = session.getProgressMessageId();
+                    showSessionProgress(progressMessageId);
+                    updateSessionProgress(sessionProgress);
+                }
+            } else {
+                hideSessionProgress();
+            }
         }
 
         /* View button */
@@ -3022,6 +3439,7 @@ public class CameraActivity extends QuickActivity
         filmstripBottomPanel.setViewerButtonVisibility(viewButtonVisibility);
     }
 
+    private Dialog mDetailDialog = null;
     private void showDetailsDialog(int index) {
         final FilmstripItem data = mDataAdapter.getItemAt(index);
         if (data == null) {
@@ -3031,8 +3449,13 @@ public class CameraActivity extends QuickActivity
         if (!details.isPresent()) {
             return;
         }
-        Dialog detailDialog = DetailsDialog.create(CameraActivity.this, details.get());
-        detailDialog.show();
+        if (mDetailDialog != null && mDetailDialog.isShowing()) {
+            mDetailDialog.dismiss();
+            mDetailDialog = null;
+        }
+        mDetailDialog = DetailsDialog.create(CameraActivity.this, details.get());
+        mDetailDialog.show();
+        if (mDetailDialog.isShowing())
         UsageStatistics.instance().mediaInteraction(
                 fileNameFromAdapterAtIndex(index), MediaInteraction.InteractionType.DETAILS,
                 NavigationChange.InteractionCause.BUTTON, fileAgeFromAdapterAtIndex(index));
@@ -3053,5 +3476,141 @@ public class CameraActivity extends QuickActivity
 
         boolean showDetails = data.getAttributes().hasDetailedCaptureInfo();
         detailsMenuItem.setVisible(showDetails);
+
+        FilmstripItemData itemdata = data.getData();
+        if (itemdata != null) {
+            Location location = itemdata.getLocation();
+            String type = itemdata.getMimeType();
+            MenuItem showOnMapMenuItem = mActionBarMenu.findItem(R.id.action_show_on_map);
+            if (showOnMapMenuItem == null) {
+                return;
+            }
+            boolean itemHasLocation = (location != null && location.isValid());
+            boolean showOnMap = FilmstripItemData.MIME_TYPE_JPEG.equals(type);
+            showOnMapMenuItem.setVisible(showOnMap && itemHasLocation);
+        }
+    }
+
+    private void updateActivityOrientation() {
+        if (CameraUtil.AUTO_ROTATE_SENSOR) {
+            // TODO: Handle this in OrientationManager.
+            // Auto-rotate off
+            if (Settings.System.getInt(getContentResolver(),
+                    Settings.System.ACCELEROMETER_ROTATION, 0) == 0) {
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+                mAutoRotateScreen = false;
+            } else {
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR);
+                mAutoRotateScreen = true;
+            }
+        } else {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            mAutoRotateScreen = false;
+        }
+    }
+
+    private void initExposure() {
+        String[] cameraId = getResources().getStringArray(R.array.camera_id_entryvalues);
+        if (cameraId != null) {
+            for (int i = 0; i < cameraId.length; i++) {
+                if (Integer.valueOf(cameraId[i]) < 0) {
+                    // if an unopen camera i.e. negative ID is returned, which we've observed in
+                    // some automated scenarios, just return it as a valid separate scope
+                    // this could cause user issues, so log a stack trace noting the call path
+                    // which resulted in this scenario.
+                    continue;
+                }
+                String cameraScope = SettingsManager.CAMERA_SCOPE_PREFIX + cameraId[i];
+                if (mSettingsManager.isSet(cameraScope, Keys.KEY_EXPOSURE)) {
+                    mSettingsManager.set(cameraScope, Keys.KEY_EXPOSURE, 0);
+                }
+            }
+        }
+    }
+
+    public void onNonDecorWindowSizeChanged() {
+        if (mCurrentModule != null)
+            mCurrentModule.onNonDecorWindowSizeChanged();
+    }
+
+    private void registerMediaMountListener() {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_MEDIA_REMOVED);
+        filter.addAction(Intent.ACTION_MEDIA_EJECT);
+        filter.addAction(Intent.ACTION_MEDIA_MOUNTED);
+        filter.addAction(Intent.ACTION_MEDIA_UNMOUNTED);
+        filter.addDataScheme("file");
+        registerReceiver(mMediaStateChangedReceiver, filter);
+        updateMediaSavePath();
+    }
+
+    private void unregisterMediaMountListener() {
+        try {
+            unregisterReceiver(mMediaStateChangedReceiver);
+        } catch (Exception e) {
+            Log.e(TAG, "unregisterReceiver MediaStateChangedReceiver error:" + e);
+        }
+    }
+
+    private BroadcastReceiver mMediaStateChangedReceiver = new BroadcastReceiver(){
+        public void onReceive(Context context, Intent intent) {
+            /*String action = intent.getAction();
+            if(action.equals(Intent.ACTION_MEDIA_UNMOUNTED) && Storage.EXTENAL_SD.equals(intent.getData().getPath())){
+                Toast.makeText(context, R.string.external_sd_pull_out, Toast.LENGTH_SHORT).show();
+                finish();
+            }else{
+                String mountPath = intent.getData().getPath();
+                Log.i(TAG, "receiver broadcast action = " + action
+                        + ", data = " + mountPath);
+                updateExternalSD(CameraActivity.this);
+                updateMediaSavePath();
+                updateStorageSpaceAndHint(null);
+               if (mountPath != null && (mountPath.equals(Storage.EXTENAL_SD)
+                        || mountPath.equals("/sdcard")
+                        || mountPath.equals(Environment.getExternalStorageDirectory().getPath())))
+                    mIsNeedReLoadImage = true;
+            }*/
+        }
+    };
+
+    private void updateMediaSavePath() {
+        /*final String SDCARD = getResources().getString(R.string.pref_media_save_path_external_sd);
+        String value = mSettingsManager.getString(SettingsManager.SCOPE_GLOBAL, Keys.KEY_MEDIA_SAVE_PATH);
+        Log.i(TAG, "get mediapath value = " + value);
+        if (SDCARD.equals(value)) {
+            String state = Environment.getStorageState(new File(Storage.EXTENAL_SD));
+            Log.i(TAG,"getSecondVolumeStorageState = " + state);
+            if (!Environment.MEDIA_MOUNTED.equalsIgnoreCase(state)) {
+                Storage.DIRECTORY = Storage.DEFAULT_DIRECTORY;
+                mSettingsManager.setToDefault(SettingsManager.SCOPE_GLOBAL, Keys.KEY_MEDIA_SAVE_PATH);
+            }
+        }*/
+    }
+
+    private void updateExternalSD(Context context) {
+        StorageManager sm = (StorageManager) getSystemService(Context.STORAGE_SERVICE);
+        if (sm != null) {
+            final List<VolumeInfo> volumes = sm.getVolumes();
+            Collections.sort(volumes, VolumeInfo.getDescriptionComparator());
+            for (VolumeInfo vol : volumes) {
+                if (vol.getType() == VolumeInfo.TYPE_PUBLIC) {
+                    Log.d(TAG, "Volume path for user:" + vol.getInternalPathForUser(context.getUserId()));
+                    DiskInfo disk = vol.getDisk();
+                    if(disk != null) {
+                        if(disk.isSd()) {
+                            //sdcard dir
+                            StorageVolume sv = vol.buildStorageVolume(context, context.getUserId(), false);
+                            String sdcard_dir = sv.getPath();
+                            Log.d(TAG, "external sd = " + sdcard_dir);
+                            /*Storage.EXTENAL_SD = sdcard_dir;
+                            Storage.EXTERNAL_DIRECTORY = Storage.EXTENAL_SD
+                                    + "/" + Environment.DIRECTORY_DCIM
+                                    + "/Camera";*/
+                            break;
+                        }
+                    }
+                }
+            }
+        }
     }
 }

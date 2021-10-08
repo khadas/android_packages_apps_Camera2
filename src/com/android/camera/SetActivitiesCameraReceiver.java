@@ -37,7 +37,7 @@ public class SetActivitiesCameraReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         // Disable camera-related activities if there is no camera.
-        int component_state = (CHECK_BACK_CAMERA_ONLY
+        /*int component_state = (CHECK_BACK_CAMERA_ONLY
             ? hasBackCamera()
             : (hasCamera() || supportExternalCamera(context)))
             ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED
@@ -47,7 +47,7 @@ public class SetActivitiesCameraReceiver extends BroadcastReceiver {
         for (int i = 0; i < ACTIVITIES.length; i++) {
             setComponent(context, ACTIVITIES[i],
                 component_state);
-        }
+        }*/
     }
 
     private boolean supportExternalCamera(Context context) {

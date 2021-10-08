@@ -34,6 +34,8 @@ public class VideoDataQuery {
     public static final int COL_LATITUDE = 9;
     public static final int COL_LONGITUDE = 10;
     public static final int COL_DURATION = 11;
+    public static final int COL_DATE_ADDED = 12;
+
 
     /**
      * These values should be kept in sync with column IDs (COL_*) above.
@@ -50,6 +52,7 @@ public class VideoDataQuery {
           MediaStore.Video.VideoColumns.SIZE,          // 8 long
           MediaStore.Video.VideoColumns.LATITUDE,      // 9 double
           MediaStore.Video.VideoColumns.LONGITUDE,     // 10 double
-          MediaStore.Video.VideoColumns.DURATION       // 11 long
+          MediaStore.Video.VideoColumns.DURATION,       // 11 long
+          MediaStore.MediaColumns.DATE_ADDED
     };
 }

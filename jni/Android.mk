@@ -11,7 +11,7 @@ LOCAL_LICENSE_KINDS := SPDX-license-identifier-Apache-2.0
 LOCAL_LICENSE_CONDITIONS := notice
 LOCAL_NOTICE_FILE := $(LOCAL_PATH)/NOTICE
 LOCAL_SRC_FILES := tinyplanet.cc
-LOCAL_PRODUCT_MODULE := true
+#LOCAL_PRODUCT_MODULE := true
 
 LOCAL_CFLAGS += -ffast-math -O3 -funroll-loops
 LOCAL_CFLAGS += -Wall -Wextra -Werror
@@ -29,7 +29,7 @@ LOCAL_MODULE    := libjni_jpegutil
 LOCAL_LICENSE_KINDS := SPDX-license-identifier-Apache-2.0
 LOCAL_LICENSE_CONDITIONS := notice
 LOCAL_NOTICE_FILE := $(LOCAL_PATH)/NOTICE
-LOCAL_PRODUCT_MODULE := true
+#LOCAL_PRODUCT_MODULE := true
 LOCAL_SRC_FILES := jpegutil.cpp jpegutilnative.cpp
 
 LOCAL_STATIC_LIBRARIES := libjpeg_static_ndk

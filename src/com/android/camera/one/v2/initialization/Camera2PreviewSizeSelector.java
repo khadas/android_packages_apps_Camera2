@@ -19,6 +19,7 @@ package com.android.camera.one.v2.initialization;
 import com.android.camera.CaptureModuleUtil;
 import com.android.camera.one.PreviewSizeSelector;
 import com.android.camera.util.Size;
+import android.app.Activity;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,7 +37,7 @@ class Camera2PreviewSizeSelector implements PreviewSizeSelector {
         mSupportedPreviewSizes = new ArrayList<>(supportedPreviewSizes);
     }
 
-    public Size pickPreviewSize(Size pictureSize) {
+    public Size pickPreviewSize(Size pictureSize, Activity context) {
         if (pictureSize == null) {
             // TODO The default should be selected by the caller, and
             // pictureSize should never be null.
@@ -46,7 +47,7 @@ class Camera2PreviewSizeSelector implements PreviewSizeSelector {
 
         Size size = CaptureModuleUtil.getOptimalPreviewSize(
                 (Size[]) mSupportedPreviewSizes.toArray(new Size[mSupportedPreviewSizes.size()]),
-                pictureAspectRatio, null);
+                pictureAspectRatio, context);
         return size;
     }
 
