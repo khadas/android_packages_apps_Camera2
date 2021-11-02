@@ -19,6 +19,7 @@ package com.android.camera.data;
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Environment;
 import android.provider.MediaStore;
 
 import com.android.camera.Storage;
@@ -32,6 +33,9 @@ import java.util.List;
  */
 public class FilmstripContentQueries {
     private static final Log.Tag TAG = new Log.Tag("LocalDataQuery");
+    private static final String PHOTO_PATH = "%" + Environment.DIRECTORY_PICTURES + "%";
+    private static final String VIDEO_PATH = "%" + Environment.DIRECTORY_MOVIES + "%";
+    private static final String SELECT_BY_PATH = MediaStore.MediaColumns.DATA + " LIKE ?";
 
     public interface CursorToFilmstripItemFactory<I extends FilmstripItem> {
 
@@ -59,8 +63,8 @@ public class FilmstripContentQueries {
     public static <I extends FilmstripItem> List<I> forCameraPath(ContentResolver contentResolver,
           Uri contentUri, String[] projection, long minimumId, String orderBy,
           CursorToFilmstripItemFactory<I> factory) {
-        String selection = MediaStore.MediaColumns._ID + " > ?";
-        String[] selectionArgs = new String[] { Long.toString(minimumId) };
+        String selection = SELECT_BY_PATH + " AND " + MediaStore.MediaColumns._ID + " > ?";
+        String[] selectionArgs = new String[] { PhotoDataQuery.CONTENT_URI.equals(contentUri) ? PHOTO_PATH : VIDEO_PATH, Long.toString(minimumId) };
 
         Cursor cursor = contentResolver.query(contentUri, projection,
               selection, selectionArgs, orderBy);
