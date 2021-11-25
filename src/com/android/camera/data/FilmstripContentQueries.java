@@ -36,6 +36,7 @@ public class FilmstripContentQueries {
     private static final String PHOTO_PATH = "%" + Environment.DIRECTORY_PICTURES + "%";
     private static final String VIDEO_PATH = "%" + Environment.DIRECTORY_MOVIES + "%";
     private static final String SELECT_BY_PATH = MediaStore.MediaColumns.DATA + " LIKE ?";
+    private static final String CAMERA2_PACKAGENAME = "com.android.camera2";
 
     public interface CursorToFilmstripItemFactory<I extends FilmstripItem> {
 
@@ -71,15 +72,17 @@ public class FilmstripContentQueries {
         List<I> result = new ArrayList<>();
         if (cursor != null) {
             while (cursor.moveToNext()) {
-                I item = factory.get(cursor);
-                if (item != null) {
-                    result.add(item);
-                } else {
-                    final int dataIndex = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
-                    Log.e(TAG, "Error loading data:" + cursor.getString(dataIndex));
+                String packageName = cursor.getString(cursor.getColumnIndex("owner_package_name"));
+                if (packageName != null && packageName.equals(CAMERA2_PACKAGENAME)) {
+                    I item = factory.get(cursor);
+                    if (item != null) {
+                        result.add(item);
+                    } else {
+                        final int dataIndex = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
+                        Log.e(TAG, "Error loading data:" + cursor.getString(dataIndex));
+                    }
                 }
             }
-
             cursor.close();
         }
         return result;

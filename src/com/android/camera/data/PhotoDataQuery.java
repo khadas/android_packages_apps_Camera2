@@ -38,22 +38,24 @@ public class PhotoDataQuery {
     public static final int COL_SIZE = 9;
     public static final int COL_LATITUDE = 10;
     public static final int COL_LONGITUDE = 11;
+    public static final int COL_OWNER_PACKAGE_NAME = 12;
 
     /**
      * These values should be kept in sync with column IDs (COL_*) above.
      */
     public static final String[] QUERY_PROJECTION = {
-          MediaStore.Images.ImageColumns._ID,           // 0, int
-          MediaStore.Images.ImageColumns.TITLE,         // 1, string
-          MediaStore.Images.ImageColumns.MIME_TYPE,     // 2, string
-          MediaStore.Images.ImageColumns.DATE_TAKEN,    // 3, int
-          MediaStore.Images.ImageColumns.DATE_MODIFIED, // 4, int
-          MediaStore.Images.ImageColumns.DATA,          // 5, string
-          MediaStore.Images.ImageColumns.ORIENTATION,   // 6, int, 0, 90, 180, 270
-          MediaStore.Images.ImageColumns.WIDTH,         // 7, int
-          MediaStore.Images.ImageColumns.HEIGHT,        // 8, int
-          MediaStore.Images.ImageColumns.SIZE,          // 9, long
-          MediaStore.Images.ImageColumns.LATITUDE,      // 10, double
-          MediaStore.Images.ImageColumns.LONGITUDE      // 11, double
+          MediaStore.Images.ImageColumns._ID,                   // 0, int
+          MediaStore.Images.ImageColumns.TITLE,                 // 1, string
+          MediaStore.Images.ImageColumns.MIME_TYPE,             // 2, string
+          MediaStore.Images.ImageColumns.DATE_TAKEN,            // 3, int
+          MediaStore.Images.ImageColumns.DATE_MODIFIED,         // 4, int
+          MediaStore.Images.ImageColumns.DATA,                  // 5, string
+          MediaStore.Images.ImageColumns.ORIENTATION,           // 6, int, 0, 90, 180, 270
+          MediaStore.Images.ImageColumns.WIDTH,                 // 7, int
+          MediaStore.Images.ImageColumns.HEIGHT,                // 8, int
+          MediaStore.Images.ImageColumns.SIZE,                  // 9, long
+          MediaStore.Images.ImageColumns.LATITUDE,              // 10, double
+          MediaStore.Images.ImageColumns.LONGITUDE,             // 11, double
+          MediaStore.Images.ImageColumns.OWNER_PACKAGE_NAME     // 12, string
     };
 }
