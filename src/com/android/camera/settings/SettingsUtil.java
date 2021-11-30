@@ -133,6 +133,8 @@ public class SettingsUtil {
 
     /** Video qualities sorted by size. */
     public static int[] sVideoQualities = new int[] {
+            CamcorderProfile.QUALITY_8KUHD,
+            CamcorderProfile.QUALITY_4KDCI,
             CamcorderProfile.QUALITY_2160P,
             CamcorderProfile.QUALITY_1080P,
             CamcorderProfile.QUALITY_720P,
@@ -336,6 +338,7 @@ public class SettingsUtil {
         for (int i = start + 1; i < sVideoQualities.length; ++i) {
             if (isVideoQualitySupported(sVideoQualities[i])
                     && CamcorderProfile.hasProfile(cameraId, sVideoQualities[i])) {
+                Log.d(TAG, "hasProfiles:" + sVideoQualities[i] + ",index:" + i);
                 // We found a new supported quality.
                 return i;
             }
