@@ -903,6 +903,8 @@
     <string name="pref_video_quality_entry_qvga">QVGA</string>
     <!-- Video quality setting entry. Videos will be recorded in 2160p quality. [CHAR LIMIT=24] -->
     <string name="pref_video_quality_entry_2160p">UHD 4K</string>
+    <string name="pref_video_quality_entry_4kdci">4KDCI</string>
+    <string name="pref_video_quality_entry_8kuhd">UHD 8K</string>
 
     <!--  The strings below will not be translated. We're using them until the above translations are sane. -->
     <string name="pref_video_quality_entry_qcif_notrans" translatable="false">QCIF</string>
@@ -912,6 +914,11 @@
     <string name="pref_video_quality_entry_1080p_notrans" translatable="false">HD 1080p</string>
     <string name="pref_video_quality_entry_qvga_notrans" translatable="false">QVGA</string>
     <string name="pref_video_quality_entry_2160p_notrans" translatable="false">UHD 4K</string>
+    <string name="pref_video_quality_entry_vga_notrans" translatable="false">VGA</string>
+    <string name="pref_video_quality_entry_4kdci_notrans" translatable="false">4KDCI</string>
+    <string name="pref_video_quality_entry_qhd_notrans" translatable="false">QHD</string>
+    <string name="pref_video_quality_entry_2k_notrans" translatable="false">2K</string>
+    <string name="pref_video_quality_entry_8kuhd_notrans" translatable="false">UHD 8K</string>
 
     <!-- Message shown in the settings summary for how many megapixels have been selected. [CHAR LIMIT=24]-->
     <string name="setting_summary_x_megapixels">%1$s megapixels</string>
