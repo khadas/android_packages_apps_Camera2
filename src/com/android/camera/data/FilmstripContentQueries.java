@@ -72,14 +72,17 @@ public class FilmstripContentQueries {
         List<I> result = new ArrayList<>();
         if (cursor != null) {
             while (cursor.moveToNext()) {
-                String packageName = cursor.getString(cursor.getColumnIndex("owner_package_name"));
-                if (packageName != null && packageName.equals(CAMERA2_PACKAGENAME)) {
-                    I item = factory.get(cursor);
-                    if (item != null) {
-                        result.add(item);
-                    } else {
-                        final int dataIndex = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
-                        Log.e(TAG, "Error loading data:" + cursor.getString(dataIndex));
+                int owner_package_name_index = cursor.getColumnIndex("owner_package_name");
+                if (owner_package_name_index > -1) {
+                    String packageName = cursor.getString(owner_package_name_index);
+                    if (packageName != null && packageName.equals(CAMERA2_PACKAGENAME)) {
+                        I item = factory.get(cursor);
+                        if (item != null) {
+                            result.add(item);
+                        } else {
+                            final int dataIndex = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
+                            Log.e(TAG, "Error loading data:" + cursor.getString(dataIndex));
+                        }
                     }
                 }
             }
