@@ -148,7 +148,7 @@ public class ShutterButton extends ImageView {
      */
     @Override
     protected void drawableStateChanged() {
-        super.drawableStateChanged();
+        //super.drawableStateChanged();
         final boolean pressed = isPressed();
         if (pressed != mOldPressed) {
             if (!pressed) {
