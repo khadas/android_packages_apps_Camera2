@@ -906,7 +906,7 @@ public class ModeListView extends FrameLayout
                 effect.setBackground(mScreenShotProvider
                         .getPreviewFrame(PREVIEW_DOWN_SAMPLE_FACTOR),
                         mCaptureLayoutHelper.getPreviewRect());
-                effect.setBackgroundOverlay(mScreenShotProvider.getScreenShot(PREVIEW_DOWN_SAMPLE_FACTOR));
+                //effect.setBackgroundOverlay(mScreenShotProvider.getScreenShot(PREVIEW_DOWN_SAMPLE_FACTOR));
             }
             mCurrentAnimationEffects = effect;
             effect.startFadeoutAnimation(null, selectedItem, iconX, iconY, modeId);
