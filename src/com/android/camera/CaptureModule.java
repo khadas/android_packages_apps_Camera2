@@ -712,6 +712,11 @@ public class CaptureModule extends CameraModule implements
             else
                 mCameraFacing = Facing.BACK;
         }
+        if (mOneCameraManager.findFirstCameraFacing(mCameraFacing) == null) {
+            mCameraFacing = getFacingFromCameraId(
+                mSettingsManager.getInteger(SettingsManager.SCOPE_GLOBAL, Keys.KEY_CAMERA_ID));
+        }
+
         if (mShowErrorAndFinish) {
             return;
         }
@@ -1474,9 +1479,11 @@ public class CaptureModule extends CameraModule implements
 
         // Only enable GCam on the back camera
         boolean useHdr = mHdrPlusEnabled && mCameraFacing == Facing.BACK;
-
         CameraId cameraId = mOneCameraManager.findFirstCameraFacing(mCameraFacing);
         Log.d(TAG,"cameraId="+cameraId);
+        if(cameraId == null || cameraId.getValue() == null) {
+            return;
+        }
         final String settingScope = SettingsManager.getCameraSettingScope(cameraId.getValue());
 
         OneCameraCaptureSetting captureSetting;
