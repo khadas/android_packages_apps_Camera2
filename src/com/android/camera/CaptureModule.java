@@ -276,6 +276,7 @@ public class CaptureModule extends CameraModule implements
 
         @Override
         public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+            //Log.d(TAG, "onSurfaceTextureUpdated --> updatePreviewTransform");
             if (mState == ModuleState.UPDATE_TRANSFORM_ON_NEXT_SURFACE_TEXTURE_UPDATE) {
                 Log.d(TAG, "onSurfaceTextureUpdated --> updatePreviewTransform");
                 mState = ModuleState.IDLE;
@@ -686,6 +687,7 @@ public class CaptureModule extends CameraModule implements
 
     private SurfaceTexture getPreviewSurfaceTexture() {
         synchronized (mSurfaceTextureLock) {
+            Log.d(TAG, "getPreviewSurfaceTexture:" + mPreviewSurfaceTexture);
             return mPreviewSurfaceTexture;
         }
     }

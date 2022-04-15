@@ -1177,7 +1177,7 @@ public class CameraAppUI implements ModeListView.ModeSwitchListener,
         int modeId = mController.getCurrentModuleIndex();
         int colorId = R.color.camera_gray_background;;
         int iconId = CameraUtil.getCameraModeCoverIconResId(modeId, mController.getAndroidContext());
-        mModeTransitionView.setupModeCover(colorId, iconId);
+        //mModeTransitionView.setupModeCover(colorId, iconId);
         mHideCoverRunnable = new Runnable() {
             @Override
             public void run() {
@@ -1918,7 +1918,7 @@ public class CameraAppUI implements ModeListView.ModeSwitchListener,
         mSurface = surface;
         mSurfaceWidth = width;
         mSurfaceHeight = height;
-        Log.v(TAG, "SurfaceTexture is available");
+        Log.d(TAG, "SurfaceTexture is available");
         if (mPreviewStatusListener != null) {
             mPreviewStatusListener.onSurfaceTextureAvailable(surface, width, height);
         }
@@ -1927,6 +1927,7 @@ public class CameraAppUI implements ModeListView.ModeSwitchListener,
 
     @Override
     public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
+        Log.d(TAG, "onSurfaceTextureSizeChanged");
         mSurface = surface;
         mSurfaceWidth = width;
         mSurfaceHeight = height;
@@ -1947,6 +1948,7 @@ public class CameraAppUI implements ModeListView.ModeSwitchListener,
 
     @Override
     public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+        //Log.d(TAG, "onSurfaceTextureUpdated mModeCoverState:" + mModeCoverState);
         mSurface = surface;
         if (mPreviewStatusListener != null) {
             mPreviewStatusListener.onSurfaceTextureUpdated(surface);
