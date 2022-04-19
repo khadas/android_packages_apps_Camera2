@@ -1177,7 +1177,7 @@ public class CameraAppUI implements ModeListView.ModeSwitchListener,
         int modeId = mController.getCurrentModuleIndex();
         int colorId = R.color.camera_gray_background;;
         int iconId = CameraUtil.getCameraModeCoverIconResId(modeId, mController.getAndroidContext());
-        //mModeTransitionView.setupModeCover(colorId, iconId);
+        mModeTransitionView.setupModeCover(colorId, iconId);
         mHideCoverRunnable = new Runnable() {
             @Override
             public void run() {
@@ -1200,6 +1200,14 @@ public class CameraAppUI implements ModeListView.ModeSwitchListener,
             mModeListView.showModeSwitcherHint();
         }
     }
+
+    private Runnable mDelayHideCoverRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (mCoverHiddenTime < 0)
+                hideModeCover();
+        }
+    };
 
     private void hideModeCover() {
         if (mHideCoverRunnable != null) {
@@ -1645,6 +1653,8 @@ public class CameraAppUI implements ModeListView.ModeSwitchListener,
             }
         }
         enableModeOptions();
+        mCoverHiddenTime = -1;
+        mAppRootView.postDelayed(mDelayHideCoverRunnable, 100);
     }
 
     /**
