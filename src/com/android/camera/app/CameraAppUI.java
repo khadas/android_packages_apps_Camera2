@@ -1149,6 +1149,8 @@ public class CameraAppUI implements ModeListView.ModeSwitchListener,
         mAccessibilityAffordances.setVisibility(
                 (!mIsCaptureIntent && mAccessibilityUtil.isAccessibilityEnabled()) ? View.VISIBLE
                         : View.GONE);
+        mTextureViewHelper.setSurfaceTextureListener(this);
+        mTextureViewHelper.setOnLayoutChangeListener(mPreviewLayoutChangeListener);
     }
 
     /**

@@ -235,10 +235,12 @@ public class TextureViewHelper implements TextureView.SurfaceTextureListener,
 
     public void setOnLayoutChangeListener(OnLayoutChangeListener listener) {
         mOnLayoutChangeListener = listener;
+        mPreview.addOnLayoutChangeListener(this);
     }
 
     public void setSurfaceTextureListener(TextureView.SurfaceTextureListener listener) {
         mSurfaceTextureListener = listener;
+        mPreview.setSurfaceTextureListener(this);
     }
 
     /**
