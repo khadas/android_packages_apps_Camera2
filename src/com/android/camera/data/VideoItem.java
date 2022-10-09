@@ -19,6 +19,7 @@ package com.android.camera.data;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -170,6 +171,17 @@ public class VideoItem extends FilmstripItemBase<VideoItemData> {
                 @Override
                 public void onClick(View v) {
                     videoClickedCallback.playVideo(mData.getUri(), mData.getTitle());
+                }
+            });
+
+            viewHolder.mPlayButton.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                @Override
+                public void onFocusChange(View v, boolean hasFocus) {
+                    if (hasFocus) {
+                        v.setBackgroundResource(R.drawable.button_background_selected_photo);
+                    } else {
+                        v.setBackgroundColor(Color.TRANSPARENT);
+                    }
                 }
             });
 

@@ -42,6 +42,8 @@ import android.widget.Scroller;
 import com.android.camera.CameraActivity;
 import com.android.camera.data.FilmstripItem;
 import com.android.camera.data.FilmstripItem.VideoClickedCallback;
+import com.android.camera.data.FilmstripItemType;
+import com.android.camera.data.VideoItem;
 import com.android.camera.debug.Log;
 import com.android.camera.filmstrip.FilmstripController;
 import com.android.camera.filmstrip.FilmstripDataAdapter;
@@ -734,6 +736,13 @@ public class FilmstripView extends ViewGroup {
             return;
         }
         int index = mViewItems[BUFFER_CENTER].getAdapterIndex();
+
+        FilmstripItemType itemViewType = mViewItems[BUFFER_CENTER].getData().getItemViewType();
+        if (itemViewType == FilmstripItemType.VIDEO) {
+            View view = mViewItems[BUFFER_CENTER].getView();
+            view.requestFocus();
+        }
+
         mListener.onZoomAtIndexChanged(index, mScale);
     }
 
