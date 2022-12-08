@@ -2107,6 +2107,8 @@ public class CameraActivity extends QuickActivity
             mSettingsManager.set(SettingsManager.SCOPE_GLOBAL,
                                  Keys.KEY_STARTUP_MODULE_INDEX,
                 mCurrentModeIndex);
+	    mSettingsManager.set(SettingsManager.SCOPE_GLOBAL, Keys.KEY_CAMERA_ID, 0);
+	    Log.d(TAG, "camera id set to default=====");
         }
 
         mPaused = true;
