@@ -97,10 +97,10 @@ public class CameraPictureSizesCacher {
      * @return List of valid sizes, or null if the Camera can not be opened.
      */
     public static List<Size> getSizesForCamera(int cameraId, Context context) {
-        Optional<List<Size>> cachedSizes = getCachedSizesForCamera(cameraId, context);
-        if (cachedSizes.isPresent()) {
-            return cachedSizes.get();
-        }
+        //Optional<List<Size>> cachedSizes = getCachedSizesForCamera(cameraId, context);
+        //if (cachedSizes.isPresent()) {
+        //    return cachedSizes.get();
+        //}
 
         // No cached value, so need to query Camera API.
         Camera thisCamera;

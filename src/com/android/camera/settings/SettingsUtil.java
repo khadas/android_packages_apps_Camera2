@@ -160,10 +160,10 @@ public class SettingsUtil {
             CamcorderProfile.QUALITY_QCIF
     };
 
-    public static SparseArray<SelectedPictureSizes> sCachedSelectedPictureSizes =
-            new SparseArray<SelectedPictureSizes>(2);
-    public static SparseArray<SelectedVideoQualities> sCachedSelectedVideoQualities =
-            new SparseArray<SelectedVideoQualities>(2);
+    //public static SparseArray<SelectedPictureSizes> sCachedSelectedPictureSizes =
+    //        new SparseArray<SelectedPictureSizes>(2);
+    //public static SparseArray<SelectedVideoQualities> sCachedSelectedVideoQualities =
+    //        new SparseArray<SelectedVideoQualities>(2);
 
     /**
      * Based on the selected size, this method returns the matching concrete
@@ -211,9 +211,9 @@ public class SettingsUtil {
      */
     static SelectedPictureSizes getSelectedCameraPictureSizes(List<Size> supported, int cameraId) {
         List<Size> supportedCopy = new LinkedList<Size>(supported);
-        if (sCachedSelectedPictureSizes.get(cameraId) != null) {
-            return sCachedSelectedPictureSizes.get(cameraId);
-        }
+        //if (sCachedSelectedPictureSizes.get(cameraId) != null) {
+        //    return sCachedSelectedPictureSizes.get(cameraId);
+        //}
         if (supportedCopy == null) {
             return null;
         }
@@ -305,7 +305,7 @@ public class SettingsUtil {
             selectedSizes.medium = searchList.get(mediumSizeIndex);
             selectedSizes.small = searchList.get(smallSizeIndex);
         }
-        sCachedSelectedPictureSizes.put(cameraId, selectedSizes);
+        //sCachedSelectedPictureSizes.put(cameraId, selectedSizes);
         return selectedSizes;
     }
 
@@ -359,9 +359,9 @@ public class SettingsUtil {
     }
 
     static SelectedVideoQualities getSelectedVideoQualities(int cameraId) {
-        if (sCachedSelectedVideoQualities.get(cameraId) != null) {
-            return sCachedSelectedVideoQualities.get(cameraId);
-        }
+        //if (sCachedSelectedVideoQualities.get(cameraId) != null) {
+        //    return sCachedSelectedVideoQualities.get(cameraId);
+        //}
 
         // Go through the sizes in descending order, see if they are supported,
         // and set large/medium/small accordingly.
@@ -377,7 +377,7 @@ public class SettingsUtil {
         selectedQualities.large = sVideoQualities[largeIndex];
         selectedQualities.medium = sVideoQualities[mediumIndex];
         selectedQualities.small = sVideoQualities[smallIndex];
-        sCachedSelectedVideoQualities.put(cameraId, selectedQualities);
+        //sCachedSelectedVideoQualities.put(cameraId, selectedQualities);
         return selectedQualities;
     }
 
