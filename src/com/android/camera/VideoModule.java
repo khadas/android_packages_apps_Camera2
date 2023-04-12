@@ -769,6 +769,20 @@ public class VideoModule extends CameraModule
         mPreferenceRead = true;
     }
 
+    private int encoderTagFromName(String encoderName) {
+        switch (encoderName) {
+            case "h263":
+                return MediaRecorder.VideoEncoder.H263;
+            case "h264":
+                return MediaRecorder.VideoEncoder.H264;
+            case "hevc":
+                return MediaRecorder.VideoEncoder.HEVC;
+            default:
+            case "mpeg_4_sp":
+                return MediaRecorder.VideoEncoder.MPEG_4_SP;
+        }
+    }
+
     /**
      * Calculates and sets local class variables for Desired Preview sizes.
      * This function should be called after every change in preview camera
@@ -1145,6 +1159,17 @@ public class VideoModule extends CameraModule
             Log.w(TAG, "null camera within proxy, not recording");
             return;
         }
+
+        SettingsManager sm = mActivity.getSettingsManager();
+        if (sm.isSet(SettingsManager.SCOPE_GLOBAL, Keys.KEY_VIDEO_ENCODER)) {
+            String requestEncoder = sm.getString(SettingsManager.SCOPE_GLOBAL, Keys.KEY_VIDEO_ENCODER);
+            Log.i(TAG, "Reconfigure video encoder: " + requestEncoder);
+
+            if (requestEncoder != null && requestEncoder.length() != 0) {
+                mProfile.videoCodec = encoderTagFromName(requestEncoder);
+            }
+        }
+
 
         mMediaRecorder.setCamera(camera);
         mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);

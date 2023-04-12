@@ -51,6 +51,14 @@
           android:entryValues="@array/pref_video_quality_entryvalues"
           android:key="pref_video_quality_front_key"
           android:title="@string/setting_front_camera_video" />
+      <!-- Video encoder -->
+      <ListPreference
+          android:defaultValue="@string/pref_video_encoder_h264"
+          android:entries="@array/pref_video_encoders_entryvalues"
+          android:entryValues="@array/pref_video_encoders_entryvalues"
+          android:key="pref_video_encoder"
+          android:persistent="true"
+          android:title="@string/setting_video_encoder" />
     </PreferenceCategory>
   </PreferenceScreen>
 

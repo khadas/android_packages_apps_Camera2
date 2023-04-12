@@ -415,6 +415,8 @@ public class CameraSettingsActivity extends FragmentActivity {
                 setSummaryForSelection(mPictureSizes.videoQualitiesBack.orNull(), listPreference);
             } else if (listPreference.getKey().equals(Keys.KEY_VIDEO_QUALITY_FRONT)) {
                 setSummaryForSelection(mPictureSizes.videoQualitiesFront.orNull(), listPreference);
+            } else if (listPreference.getKey().equals(Keys.KEY_VIDEO_ENCODER)) {
+                listPreference.setSummary(listPreference.getValue());
             } else {
                 listPreference.setSummary(listPreference.getEntry());
             }

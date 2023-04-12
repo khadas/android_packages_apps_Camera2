@@ -223,6 +223,11 @@
     <!-- The value of a camera preference indicating the video quality is 'small'. -->
     <string name="pref_video_quality_small" translatable="false">small</string>
 
+    <string name="pref_video_encoder_h263" translatable="false">h263</string>
+    <string name="pref_video_encoder_h264" translatable="false">h264</string>
+    <string name="pref_video_encoder_hevc" translatable="false">hevc</string>
+    <string name="pref_video_encoder_mp4sp" translatable="false">mpeg_4_sp</string>
+
     <!-- Describes the preference dialog for choosing interval between frame capture for
     time lapse recording. Appears at top of the dialog. [CHAR LIMIT=30] -->
     <string name="pref_video_time_lapse_frame_interval_title">Time lapse</string>
@@ -835,6 +840,7 @@
     <string name="setting_front_camera_photo">Front camera photo</string>
     <!-- Camera settings title for front camera video resolution. [CHAR LIMIT=25] -->
     <string name="setting_front_camera_video">Front camera video</string>
+    <string name="setting_video_encoder" translatable="false">Video Encoder</string>
 
     <!-- Text shown in camera settings list for selecting the camera mode that will be used by default when the app starts [CHAR LIMIT=25] -->
     <string name="setting_default_camera">Default Camera</string>

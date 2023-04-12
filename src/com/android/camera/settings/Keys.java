@@ -36,6 +36,7 @@ public class Keys {
     public static final String KEY_RECORD_LOCATION = "pref_camera_recordlocation_key";
     public static final String KEY_VIDEO_QUALITY_BACK = "pref_video_quality_back_key";
     public static final String KEY_VIDEO_QUALITY_FRONT = "pref_video_quality_front_key";
+    public static final String KEY_VIDEO_ENCODER = "pref_video_encoder";
     public static final String KEY_PICTURE_SIZE_BACK = "pref_camera_picturesize_back_key";
     public static final String KEY_PICTURE_SIZE_FRONT = "pref_camera_picturesize_front_key";
     public static final String KEY_JPEG_QUALITY = "pref_camera_jpegquality_key";
@@ -139,6 +140,14 @@ public class Keys {
         if (!settingsManager.isSet(SettingsManager.SCOPE_GLOBAL, Keys.KEY_VIDEO_QUALITY_FRONT)) {
             settingsManager.setToDefault(SettingsManager.SCOPE_GLOBAL,
                                          Keys.KEY_VIDEO_QUALITY_FRONT);
+        }
+
+        settingsManager.setDefaults(KEY_VIDEO_ENCODER,
+                context.getString(R.string.pref_video_encoder_h264),
+                context.getResources().getStringArray(R.array.pref_video_encoders_entryvalues));
+        if (!settingsManager.isSet(SettingsManager.SCOPE_GLOBAL, Keys.KEY_VIDEO_ENCODER)) {
+            settingsManager.setToDefault(SettingsManager.SCOPE_GLOBAL,
+                    Keys.KEY_VIDEO_ENCODER);
         }
 
         settingsManager.setDefaults(KEY_JPEG_QUALITY,
