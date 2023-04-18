@@ -232,7 +232,7 @@ public class CameraActivity extends QuickActivity
     private ModeListView mModeListView;
     private boolean mModeListVisible = false;
     private int mCurrentModeIndex;
-    private CameraModule mCurrentModule;
+    public CameraModule mCurrentModule;
     private ModuleManagerImpl mModuleManager;
     private FrameLayout mAboveFilmstripControlLayout;
     private FilmstripController mFilmstripController;
@@ -2311,6 +2311,7 @@ public class CameraActivity extends QuickActivity
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (!mFilmstripVisible) {
+            Log.d(TAG, "keycode:" + keyCode + " " + event);
             if (mCurrentModule.onKeyDown(keyCode, event)) {
                 return true;
             }
