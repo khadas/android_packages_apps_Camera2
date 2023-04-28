@@ -47,19 +47,19 @@ public class DisableCameraReceiver extends BroadcastReceiver {
         Log.d(TAG, "onReceive intent=" + intent);
         String action = intent.getAction();
         // Disable camera-related activities if there is no camera.
-        boolean needCameraActivity = CHECK_BACK_CAMERA_ONLY
+/*         boolean needCameraActivity = CHECK_BACK_CAMERA_ONLY
             ? hasBackCamera()
-            : hasCamera();
+            : hasCamera(); */
 
         if (Intent.ACTION_BOOT_COMPLETED.equals(action)) {
-            if (!needCameraActivity && !supportExternalCamera(context)) {
-                Log.i(TAG, "disable all camera activities");
+            //if (!needCameraActivity && !supportExternalCamera(context)) {
+                Log.i(TAG, "enable all camera activities");
                 for (int i = 0; i < ACTIVITIES.length; i++) {
-                    disableComponent(context, ACTIVITIES[i]);
+                    enableComponent(context, ACTIVITIES[i]);
                 }
-            }
+            //}
         }
-        if(UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)){
+/*        if(UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)){
             UsbDevice device = (UsbDevice)intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
             if (isUsbCamera(device)) {
                 Log.i(TAG, "usb camera plug in, enable all camera activities!");
@@ -68,7 +68,7 @@ public class DisableCameraReceiver extends BroadcastReceiver {
                 }
             }
         }
-        else if(UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)){
+         else if(UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)){
             UsbDevice device = (UsbDevice)intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
             if (isUsbCamera(device)) {
                Log.i(TAG, "usb camera plug out, disable all camera activities!");
@@ -76,7 +76,7 @@ public class DisableCameraReceiver extends BroadcastReceiver {
                     disableComponent(context, ACTIVITIES[i]);
                 }
             }
-        }
+        } */
         // Disable this receiver so it won't run again.
         //disableComponent(context, "com.android.camera.DisableCameraReceiver");
     }
