@@ -80,18 +80,25 @@ public class VideoItemFactory implements CursorToFilmstripItemFactory<VideoItem>
     /** Query for all the video data items */
     public List<VideoItem> queryAll(Uri uri, long lastId) {
         return FilmstripContentQueries
-              .forCameraPath(mContentResolver, uri, VideoDataQuery.QUERY_PROJECTION, lastId,
+              .forCameraPathVideo(mContentResolver, uri, VideoDataQuery.QUERY_PROJECTION, lastId,
                     QUERY_ORDER, this);
     }
 
     /** Query for a single data item */
     public VideoItem queryContentUri(Uri uri) {
         // TODO: Consider refactoring this, this approach may be slow.
-        List<VideoItem> videos = queryAll(uri,
-              FilmstripItemBase.QUERY_ALL_MEDIA_ID);
+        //List<VideoItem> videos = queryAll(uri,
+              //FilmstripItemBase.QUERY_ALL_MEDIA_ID);
+        List<VideoItem> videos = FilmstripContentQueries
+              .forCameraPath(mContentResolver, uri, VideoDataQuery.QUERY_PROJECTION, FilmstripItemBase.QUERY_ALL_MEDIA_ID,
+                    QUERY_ORDER, this);
         if (videos.isEmpty()) {
             return null;
         }
         return videos.get(0);
+    }
+
+    public void deleteForAllVideo(String title) {
+        FilmstripContentQueries.deleteForAllVideo(title);
     }
 }

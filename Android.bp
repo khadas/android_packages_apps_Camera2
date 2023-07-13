@@ -1,6 +1,4 @@
-//
-// Copyright (C) 2013 Google Inc.
-//
+
 
 package {
     // See: http://go/android-license-faq
@@ -16,25 +14,25 @@ android_app {
         "androidx.legacy_legacy-support-v13",
         "androidx.legacy_legacy-support-v4",
         "androidx.core_core",
-        "android-ex-camera2-portability",
-        "xmp_toolkit",
-        "glide",
-        "guava",
-        "jsr305",
+		"android-ex-camera2-portability",
+		"xmp_toolkit",
+		"glide",
+		"guava",
+		"jsr305",
     ],
+
 
     optional_uses_libs: ["org.apache.http.legacy"],
 
-    srcs: [
-        "src/**/*.java",
-        "src_pd/**/*.java",
-        "src_pd_gcam/**/*.java",
-    ],
+    srcs: ["src/**/*.java"] + ["src_pd/**/*.java"] + ["src_pd_gcam/**/*.java"],
 
     resource_dirs: [
         "res",
         "res_p",
     ],
+
+    // ANDROIDMK TRANSLATION ERROR: unsupported include
+    // include $(LOCAL_PATH)/version.mk
 
     aaptflags: [
         "--auto-add-overlay",
@@ -44,9 +42,15 @@ android_app {
         "20002000",
     ],
 
-    sdk_version: "system_current",
+    //LOCAL_SDK_VERSION := current
 
-    product_specific: true,
+    //LOCAL_PRODUCT_MODULE := true
+
+    platform_apis: true,
+
+    certificate: "platform",
+
+    //LOCAL_DEX_PREOPT := false
 
     optimize: {
         proguard_flags_files: ["proguard.flags"],
@@ -59,4 +63,5 @@ android_app {
         "libjni_tinyplanet",
         "libjni_jpegutil",
     ],
+
 }

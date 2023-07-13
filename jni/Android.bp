@@ -1,8 +1,13 @@
+
+
+// TinyPlanet
 package {
-    default_applicable_licenses: ["packages_apps_Camera2_license"],
+    // See: http://go/android-license-faq
+    default_applicable_licenses: [
+        "packages_apps_Camera2_license",
+    ],
 }
 
-// See: http://go/android-license-faq
 license {
     name: "packages_apps_Camera2_license",
     visibility: [":__subpackages__"],
@@ -14,34 +19,38 @@ license {
     ],
 }
 
-// TinyPlanet
 cc_library_shared {
     name: "libjni_tinyplanet",
+
     shared_libs: [
         "liblog",
         "libjnigraphics",
     ],
     sdk_version: "17",
     srcs: ["tinyplanet.cc"],
-    product_specific: true,
+    //LOCAL_PRODUCT_MODULE := true
+
     cflags: [
         "-ffast-math",
         "-O3",
         "-funroll-loops",
+    ] + [
+        "-Wall",
         "-Wextra",
+        "-Werror",
     ],
     arch: {
         arm: {
             instruction_set: "arm",
         },
     },
-    // for including the jni.h file
     header_libs: ["jni_headers"],
 }
 
 // JpegUtil
 cc_library_shared {
     name: "libjni_jpegutil",
+
     stl: "c++_static",
     shared_libs: [
         "liblog",
@@ -49,23 +58,27 @@ cc_library_shared {
         "libjnigraphics",
     ],
     sdk_version: "17",
-    product_specific: true,
+    //LOCAL_DEX_PREOPT := false
     srcs: [
         "jpegutil.cpp",
         "jpegutilnative.cpp",
     ],
+
     static_libs: ["libjpeg_static_ndk"],
+
     cflags: [
         "-ffast-math",
         "-O3",
         "-funroll-loops",
+    ] + [
+        "-Wall",
         "-Wextra",
+        "-Werror",
     ],
     arch: {
         arm: {
             instruction_set: "arm",
         },
     },
-    // for including the jni.h file
     header_libs: ["jni_headers"],
 }

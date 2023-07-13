@@ -58,7 +58,7 @@ public class ApiHelper {
 
     public static final boolean HAS_HIDEYBARS = isKitKatOrHigher();
 
-    // Don't use renderscript. See b/18435492.
+    // Don't use renderscript for x86 K, L is OK. See b/18435492
     public static final boolean HAS_RENDERSCRIPT = false;
 
     public static final boolean IS_NEXUS_4 = "mako".equalsIgnoreCase(Build.DEVICE);

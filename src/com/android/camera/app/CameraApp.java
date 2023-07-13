@@ -52,7 +52,7 @@ public class CameraApp extends Application {
 
         // Android context must be the first item initialized.
         Context context = getApplicationContext();
-        AndroidContext.initialize(context);
+        //AndroidContext.initialize(context);
 
         // This will measure and write to the exception handler if
         // the time between any two calls or the total time from
@@ -67,7 +67,7 @@ public class CameraApp extends Application {
         UsageStatistics.instance().initialize(this);
         guard.mark("UsageStatistics.initialize");
 
-        clearNotifications();
+        //clearNotifications();
         guard.stop("clearNotifications");
     }
 

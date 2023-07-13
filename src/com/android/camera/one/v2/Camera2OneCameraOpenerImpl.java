@@ -101,7 +101,7 @@ public class Camera2OneCameraOpenerImpl implements OneCameraOpener {
 
     @Override
     public void open(
-            final CameraId cameraKey,
+            CameraId cameraKey,
             final OneCameraCaptureSetting captureSetting,
             final Handler handler,
             final MainThread mainThread,
@@ -111,6 +111,16 @@ public class Camera2OneCameraOpenerImpl implements OneCameraOpener {
             final OpenCallback openCallback,
             final FatalErrorHandler fatalErrorHandler) {
         try {
+            boolean ActiveCameraEnable = false;
+            for(int i = 0 ; i<mCameraManager.getCameraIdList().length ; i++){
+                if(cameraKey.getValue().equals(mCameraManager.getCameraIdList()[i])){
+                    ActiveCameraEnable = true;
+                }
+            }
+            if (!ActiveCameraEnable){
+                cameraKey = CameraId.from(mCameraManager.getCameraIdList()[0]);
+            }
+
             Log.i(TAG, "Opening Camera: " + cameraKey);
 
             mActiveCameraDeviceTracker.onCameraOpening(cameraKey);

@@ -38,22 +38,22 @@ public class SetActivitiesCameraReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         // Disable camera-related activities if there is no camera.
         int component_state = (CHECK_BACK_CAMERA_ONLY
-            ? hasBackCamera(context) : hasCamera(context))
-            ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED
-            : PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
+                ? hasBackCamera(context) : hasCamera(context))
+                ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+                : PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
 
         Log.i(TAG, "component state is " + component_state);
         for (int i = 0; i < ACTIVITIES.length; i++) {
             setComponent(context, ACTIVITIES[i],
-                component_state);
+                    component_state);
         }
     }
 
     private boolean hasCamera(Context context) {
         PackageManager pm = context.getPackageManager();
         return pm.hasSystemFeature(PackageManager.FEATURE_CAMERA)
-            || pm.hasSystemFeature(PackageManager.FEATURE_CAMERA_FRONT)
-            || pm.hasSystemFeature(PackageManager.FEATURE_CAMERA_EXTERNAL);
+                || pm.hasSystemFeature(PackageManager.FEATURE_CAMERA_FRONT)
+                || pm.hasSystemFeature(PackageManager.FEATURE_CAMERA_EXTERNAL);
     }
 
     private boolean hasBackCamera(Context context) {

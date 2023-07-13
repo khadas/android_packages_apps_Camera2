@@ -225,10 +225,17 @@ public final class StateOpeningCamera extends StateImpl {
         return Optional.absent();
     }
 
+    private void unRegisterEventHandler() {
+        removeEventHandler(EventPause.class);
+        removeEventHandler(EventOnOpenCameraSucceeded.class);
+        removeEventHandler(EventOnOpenCameraFailed.class);
+    }
+
     @Override
     public void onLeave() {
         mResourceConstructed.close();
         mResourceSurfaceTexture.close();
+        unRegisterEventHandler();
     }
 
     @VisibleForTesting
@@ -282,6 +289,17 @@ public final class StateOpeningCamera extends StateImpl {
         bottomBarSpec.showSelfTimer = true;
         /** Flash button UI spec. */
         bottomBarSpec.enableFlash = mCameraCharacteristics.isFlashSupported();
+
+        bottomBarSpec.enableWhiteBalance = mCameraCharacteristics.isWhiteBalanceSupported();
+        bottomBarSpec.supportedWhiteBalances = mCameraCharacteristics.getSupportedWhiteBalances();
+        bottomBarSpec.whiteBalanceSetCallback =
+            new CameraAppUI.BottomBarUISpec.WhiteBalanceSetCallback() {
+                @Override
+                public void setWhiteBalance(String value) {
+                    mResourceConstructed.get().getSettingsManager().set(
+                            mCameraSettingsScope, Keys.KEY_WHITEBALANCE, value);
+            }
+        };
 
         /** Setup exposure compensation */
         bottomBarSpec.isExposureCompensationSupported = mCameraCharacteristics

@@ -109,6 +109,17 @@ public class CameraController implements CameraAgent.CameraOpenCallback, CameraP
         if (mInfo == null) {
             return null;
         }
+        try {
+            return mInfo.getCharacteristics(cameraId);
+        }catch (Exception e){
+            if(getFirstBackCameraId() != -1){
+                cameraId = getFirstBackCameraId();
+            }else if(getFirstFrontCameraId() != -1){
+                cameraId = getFirstFrontCameraId();
+            }else {
+                Log.e(TAG, "cameraId not available:" + cameraId);
+            }
+        }
         return mInfo.getCharacteristics(cameraId);
     }
 
@@ -169,7 +180,8 @@ public class CameraController implements CameraAgent.CameraOpenCallback, CameraP
     @Override
     public void onCameraOpened(CameraAgent.CameraProxy camera) {
         Log.v(TAG, "onCameraOpened");
-        if (mRequestingCameraId != camera.getCameraId()) {
+        if (mRequestingCameraId != camera.getCameraId()
+                && camera == mCameraProxy) {
             return;
         }
         mCameraProxy = camera;

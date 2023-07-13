@@ -17,6 +17,7 @@
 package com.android.camera.one.v1;
 
 import android.hardware.Camera;
+
 import android.os.Handler;
 
 import com.android.camera.debug.Log;

@@ -37,6 +37,9 @@ public class VideoDataFactory {
         String title = c.getString(VideoDataQuery.COL_TITLE);
         String mimeType = c.getString(VideoDataQuery.COL_MIME_TYPE);
         long creationDateInMilliSeconds = c.getLong(VideoDataQuery.COL_DATE_TAKEN);
+        Log.d(TAG, "video creationDateInMilliSeconds:" + creationDateInMilliSeconds);
+        if (creationDateInMilliSeconds <= 0)
+             creationDateInMilliSeconds = c.getLong(VideoDataQuery.COL_DATE_ADDED) * 1000;
         long lastModifiedDateInSeconds = c.getLong(VideoDataQuery.COL_DATE_MODIFIED);
         Date creationDate = new Date(creationDateInMilliSeconds);
         Date lastModifiedDate = new Date(lastModifiedDateInSeconds * 1000);

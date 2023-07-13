@@ -75,17 +75,24 @@ public class PhotoItemFactory implements CursorToFilmstripItemFactory<PhotoItem>
     /** Query for all the photo data items */
     public List<PhotoItem> queryAll(Uri uri, long lastId) {
         return FilmstripContentQueries
-              .forCameraPath(mContentResolver, uri, PhotoDataQuery.QUERY_PROJECTION, lastId,
+              .forAllCameraPathPhoto(mContentResolver, uri, PhotoDataQuery.QUERY_PROJECTION, lastId,
                     PhotoDataQuery.QUERY_ORDER, this);
     }
 
     /** Query for a single data item */
     public PhotoItem queryContentUri(Uri uri) {
         // TODO: Consider refactoring this, this approach may be slow.
-        List<PhotoItem> newPhotos = queryAll(uri, FilmstripItemBase.QUERY_ALL_MEDIA_ID);
+        //List<PhotoItem> newPhotos = queryAll(uri, FilmstripItemBase.QUERY_ALL_MEDIA_ID);
+        List<PhotoItem> newPhotos = FilmstripContentQueries
+              .forCameraPath(mContentResolver, uri, PhotoDataQuery.QUERY_PROJECTION, FilmstripItemBase.QUERY_ALL_MEDIA_ID,
+                    PhotoDataQuery.QUERY_ORDER, this);
         if (newPhotos.isEmpty()) {
             return null;
         }
         return newPhotos.get(0);
+    }
+
+    public void deleteForAllPhoto(String title) {
+        FilmstripContentQueries.deleteForAllPhoto(title);
     }
 }

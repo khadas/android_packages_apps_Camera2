@@ -88,9 +88,6 @@ public interface OneCamera {
          */
         public void onFailure();
 
-        /**
-         * Called if the camera is currently being used by a higher priority application.
-         **/
         public void onCameraInUse();
 
         /**
@@ -99,9 +96,6 @@ public interface OneCamera {
          */
         public void onCameraClosed();
 
-        /** 
-         * Called if the camera is disconnected after successfully opening
-         */
         public void onCameraInterrupted();
     }
 
@@ -331,6 +325,81 @@ public interface OneCamera {
                     return OFF;
                 } else if (ON.encodeSettingsString().equals(setting)) {
                     return ON;
+                }
+                throw new IllegalArgumentException("Not a valid setting");
+            }
+        }
+        
+        public static enum WhiteBalance {
+            /**
+             * @see {@link android.hardware.Camera.Parameters#WHITE_BALANCE_AUTO}.
+             */
+            AUTO("auto"),
+            /**
+             * @see {@link android.hardware.Camera.Parameters#WHITE_BALANCE_CLOUDY_DAYLIGHT}.
+             */
+            CLOUDY_DAYLIGHT("cloudy-daylight"),
+            /**
+             * @see {@link android.hardware.Camera.Parameters#WHITE_BALANCE_DAYLIGHT}.
+             */
+            DAYLIGHT("daylight"),
+            /**
+             * @see {@link android.hardware.Camera.Parameters#WHITE_BALANCE_FLUORESCENT}.
+             */
+            FLUORESCENT("fluorescent"),
+            /**
+             * @see {@link android.hardware.Camera.Parameters#WHITE_BALANCE_INCANDESCENT}.
+             */
+            INCANDESCENT("incandescent"),
+            /**
+             * @see {@link android.hardware.Camera.Parameters#WHITE_BALANCE_SHADE}.
+             */
+            SHADE("shade"),
+            /**
+             * @see {@link android.hardware.Camera.Parameters#WHITE_BALANCE_TWILIGHT}.
+             */
+            TWILIGHT("twilight"),
+            /**
+             * @see {@link android.hardware.Camera.Parameters#WHITE_BALANCE_WARM_FLUORESCENT}.
+             */
+            WARM_FLUORESCENT("warm_fluorescent");
+
+            /**
+             * The machine-readable (via {@link #encodeSettingsString} and
+             * {@link #decodeSettingsString} string used to represent this flash
+             * mode in {@link SettingsManager}.
+             * <p>
+             * This must be in sync with R.arrays.pref_camera_flashmode_entryvalues.
+             */
+            private final String mSettingsString;
+
+            WhiteBalance(@Nonnull String settingsString) {
+                mSettingsString = settingsString;
+            }
+
+            @Nonnull
+            public String encodeSettingsString() {
+                return mSettingsString;
+            }
+
+            @Nonnull
+            public static WhiteBalance decodeSettingsString(@Nonnull String setting) {
+                if (AUTO.encodeSettingsString().equals(setting)) {
+                    return AUTO;
+                } else if (CLOUDY_DAYLIGHT.encodeSettingsString().equals(setting)) {
+                    return CLOUDY_DAYLIGHT;
+                } else if (DAYLIGHT.encodeSettingsString().equals(setting)) {
+                    return DAYLIGHT;
+                } else if (FLUORESCENT.encodeSettingsString().equals(setting)) {
+                    return FLUORESCENT;
+                } else if (INCANDESCENT.encodeSettingsString().equals(setting)) {
+                    return INCANDESCENT;
+                } else if (SHADE.encodeSettingsString().equals(setting)) {
+                    return SHADE;
+                } else if (TWILIGHT.encodeSettingsString().equals(setting)) {
+                    return TWILIGHT;
+                }  else if (WARM_FLUORESCENT.encodeSettingsString().equals(setting)) {
+                    return WARM_FLUORESCENT;
                 }
                 throw new IllegalArgumentException("Not a valid setting");
             }

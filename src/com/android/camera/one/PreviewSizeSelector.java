@@ -17,6 +17,7 @@
 package com.android.camera.one;
 
 import com.android.camera.util.Size;
+import android.app.Activity;
 
 /**
  * Picks a preview size for a given image resolution choice.
@@ -26,5 +27,5 @@ public interface PreviewSizeSelector {
     /**
      * Given an image capture resolution, pick a preview size.
      */
-    public Size pickPreviewSize(Size imageResolution);
+    public Size pickPreviewSize(Size imageResolution, Activity context);
 }

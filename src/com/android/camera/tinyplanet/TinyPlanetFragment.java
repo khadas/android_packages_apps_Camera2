@@ -273,7 +273,11 @@ public class TinyPlanetFragment extends DialogFragment implements PreviewSizeLis
 
         if (xmp != null) {
             int size = previewSize ? getDisplaySize() : sourceBitmap.getWidth();
-            sourceBitmap = createPaddedBitmap(sourceBitmap, xmp, size);
+            Bitmap b1 = createPaddedBitmap(sourceBitmap, xmp, size);
+            if (b1 != sourceBitmap) {
+                sourceBitmap.recycle();
+                sourceBitmap = b1;
+            }
         }
         return sourceBitmap;
     }
@@ -362,6 +366,11 @@ public class TinyPlanetFragment extends DialogFragment implements PreviewSizeLis
 
         ByteArrayOutputStream jpeg = new ByteArrayOutputStream();
         resultBitmap.compress(CompressFormat.JPEG, 100, jpeg);
+
+        // Free the resultBitmap memory as we don't need it and we need memory
+        // for the JPEG bytes.
+        resultBitmap.recycle();
+        resultBitmap = null;
         return new TinyPlanetImage(addExif(jpeg.toByteArray()), outputSize);
     }
 
