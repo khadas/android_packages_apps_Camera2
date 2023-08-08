@@ -1393,6 +1393,7 @@ public class CameraActivity extends QuickActivity
 
     private boolean isCaptureIntent() {
         if (MediaStore.ACTION_VIDEO_CAPTURE.equals(getIntent().getAction())
+                || MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA.equals(getIntent().getAction())
                 || MediaStore.ACTION_IMAGE_CAPTURE.equals(getIntent().getAction())
                 || MediaStore.ACTION_IMAGE_CAPTURE_SECURE.equals(getIntent().getAction())) {
             return true;
@@ -1927,6 +1928,9 @@ public class CameraActivity extends QuickActivity
             finish();
             return;
         }
+
+        Log.d(TAG, "onResumeTasks, Action: " + getIntent().getAction());
+
         if (!isSecureCamera() && !isCaptureIntent()) {
             // Show the dialog if necessary. The rest resume logic will be invoked
             // at the onFirstRunStateReady() callback.
