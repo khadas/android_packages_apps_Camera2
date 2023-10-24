@@ -100,7 +100,7 @@ public class ModeListView extends FrameLayout
     private static final float SCROLL_FACTOR = 0.5f;
     // 60% opaque black background.
     private static final int BACKGROUND_TRANSPARENTCY = (int) (0.6f * 255);
-    private static final int PREVIEW_DOWN_SAMPLE_FACTOR = 4;
+    private static final int PREVIEW_DOWN_SAMPLE_FACTOR = 1;
     // Threshold, below which snap back will happen.
     private static final float SNAP_BACK_THRESHOLD_RATIO = 0.33f;
 
