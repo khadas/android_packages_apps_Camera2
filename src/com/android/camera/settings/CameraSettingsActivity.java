@@ -379,7 +379,7 @@ public class CameraSettingsActivity extends FragmentActivity {
                                 cameraCharacteristics.getSupportedPictureSizes(ImageFormat.JPEG),
                                 "");
                 final Size fallbackPictureSize =
-                        ResolutionUtil.getLargestPictureSize(aspectRatio, supportedPictureSizes);
+                        ResolutionUtil.getLargestPictureSize(supportedPictureSizes);
                 mSettingsManager.set(
                         SettingsManager.SCOPE_GLOBAL,
                         pictureSizeSettingKey,

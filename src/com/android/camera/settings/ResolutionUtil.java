@@ -410,6 +410,24 @@ public class ResolutionUtil {
         return maxSize;
     }
 
+    public static Size getLargestPictureSize(List<Size> sizes) {
+        int maxPixelNumNoAspect = 0;
+        Size maxSize = new Size(0, 0);
+
+        // Fix for b/21758681
+        // Do first pass with the candidate with closest size, regardless of aspect ratio,
+        // to loosen the requirement of valid preview sizes.  As long as one size exists
+        // in the list, we should pass back a valid size.
+        for (Size size : sizes) {
+            int pixelNum = size.getWidth() * size.getHeight();
+            if (pixelNum > maxPixelNumNoAspect) {
+                maxPixelNumNoAspect = pixelNum;
+                maxSize = size;
+            }
+        }
+        return maxSize;
+    }
+
     public static DisplayMetrics getDisplayMetrics(Activity context) {
         DisplayMetrics displayMetrics = new DisplayMetrics();
         Display d = context.getDisplay();
