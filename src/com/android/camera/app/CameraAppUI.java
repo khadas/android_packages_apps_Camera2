@@ -1841,6 +1841,7 @@ public class CameraAppUI implements ModeListView.ModeSwitchListener,
      * @param thumbnailBitmap The thumbnail image to be shown.
      */
     public void updateCaptureIndicatorThumbnail(Bitmap thumbnailBitmap, int rotation) {
+        Log.d(TAG, "updateCaptureIndicatorThumbnail rotation:" + rotation);
         if (mSuppressCaptureIndicator || mFilmstripLayout.getVisibility() == View.VISIBLE) {
             return;
         }

@@ -47,6 +47,11 @@ import java.util.concurrent.Executors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.io.InputStream;
+import java.lang.ref.SoftReference;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import com.android.camera.exif.ExifInterface;
 
 /**
  * Wires up the ImageBackend task submission process to save JPEG images. Camera
@@ -123,10 +128,19 @@ public class JpegImageBackendImageSaver implements ImageSaver.Builder {
 
                 // Downsample and convert the JPEG payload to a reasonably-sized
                 // Bitmap
-                BitmapFactory.Options options = new BitmapFactory.Options();
+                /*BitmapFactory.Options options = new BitmapFactory.Options();
                 options.inSampleSize = JPEG_DOWNSAMPLE_FOR_FAST_INDICATOR;
                 final Bitmap bitmap = BitmapFactory.decodeByteArray(payload.data, 0,
-                        payload.data.length, options);
+                        payload.data.length, options);*/
+                ExifInterface exif = null;
+                try {
+                    exif = new ExifInterface();
+                    exif.readExif(payload.data);
+                } catch (IOException e) {
+                    Log.w(TAG, "Could not read exif", e);
+                    exif = null;
+                }
+                final Bitmap bitmap = exif.getThumbnailBitmap();
 
                 // If the rotation is implemented as an EXIF flag, we need to
                 // pass this information onto the UI call, since the rotation is
