@@ -1322,11 +1322,11 @@ public class VideoModule extends CameraModule
         }
         Intent intent = mActivity.getIntent();
         Bundle myExtras = intent.getExtras();
-
         long requestedSizeLimit = 0;
         closeVideoFileDescriptor();
         mCurrentVideoUriFromMediaSaved = false;
-        if (mIsVideoCaptureIntent && myExtras != null) {
+        if (mIsVideoCaptureIntent && myExtras != null
+            && myExtras.getParcelable(MediaStore.EXTRA_OUTPUT) != null) {
             Uri saveUri = (Uri) myExtras.getParcelable(MediaStore.EXTRA_OUTPUT);
             if (saveUri != null) {
                 try {
