@@ -749,8 +749,18 @@ public class CaptureModule extends CameraModule implements
             mCameraFacing = getFacingFromCameraId(
                 mSettingsManager.getInteger(SettingsManager.SCOPE_GLOBAL, Keys.KEY_CAMERA_ID));
         }
-        mSettingsManager.set(SettingsManager.SCOPE_GLOBAL, Keys.KEY_CAMERA_ID,
-                            mCameraFacing == Facing.BACK ? 0 : 1);
+        CameraManager manager = (CameraManager) mCameraActivity.getSystemService(Context.CAMERA_SERVICE);
+        try {
+            if (manager.getCameraIdList().length > 1) {
+                mSettingsManager.set(SettingsManager.SCOPE_GLOBAL, Keys.KEY_CAMERA_ID,
+                        mCameraFacing == Facing.BACK ? 0 : 1);
+            } else {
+                mSettingsManager.set(SettingsManager.SCOPE_GLOBAL, Keys.KEY_CAMERA_ID, 0);
+            }
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+            return;
+        }
 
         if (mShowErrorAndFinish) {
             return;
