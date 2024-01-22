@@ -110,6 +110,10 @@
       android:negativeButtonText="@android:string/cancel"
       />
 
+<!--<Preference
+        android:key="pref_scan_qr_code"
+        android:title="@string/pref_qr_code_scanner"/> -->
+
   <!-- Google Help and feedback launcher -->
   <!-- <Preference
       android:key="pref_launch_help"

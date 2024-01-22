@@ -69,6 +69,7 @@ import java.io.File;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import com.android.camera.RKScannerQRCodeActivity;
 
 /**
  * Provides the settings UI for the Camera app.
@@ -178,6 +179,7 @@ public class CameraSettingsActivity extends FragmentActivity {
         public static final String PREF_CATEGORY_ADVANCED = "pref_category_advanced";
         public static final String PREF_LAUNCH_HELP = "pref_launch_help";
         public static final String PREF_RESTORE_SETTINGS = "pref_restore_settings";
+//        public static final String PREF_SCAN_QR_CODE = "pref_scan_qr_code";
         private static final Log.Tag TAG = new Log.Tag("SettingsFragment");
         private static DecimalFormat sMegaPixelFormat = new DecimalFormat("##0.0");
         private String[] mCamcorderProfileNames;
@@ -305,7 +307,7 @@ public class CameraSettingsActivity extends FragmentActivity {
             final MyDialogPreference restoreSettings =
                     (MyDialogPreference) findPreference(PREF_RESTORE_SETTINGS);
             restoreSettings.setPositiveButtonListener(new DialogInterface.OnClickListener() {
-                
+
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     // TODO Auto-generated method stub
@@ -315,6 +317,16 @@ public class CameraSettingsActivity extends FragmentActivity {
                     restoreUI();
                 }
             });
+           /*Preference scanQRCodePreference = findPreference(PREF_SCAN_QR_CODE);
+            scanQRCodePreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    // 执行跳转操作
+                    Intent intent = new Intent(getActivity(), RKScannerQRCodeActivity.class);
+                    startActivity(intent);
+                    return true;
+                }
+            });*/
             mCameraSound = (ManagedSwitchPreference) findPreference(Keys.KEY_CAMERA_SOUND);
             mLocation = (ManagedSwitchPreference) findPreference(Keys.KEY_RECORD_LOCATION);
             //mPreviewFullSize = (ManagedSwitchPreference) findPreference(Keys.KEY_PREVIEW_FULL_SIZE_ENABLE);

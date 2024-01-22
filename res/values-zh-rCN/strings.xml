@@ -441,4 +441,15 @@
     <!-- Low-memory dialog message [CHAR LIMIT=NONE] -->
     <string name="flash_spaceIsLow_content" product="default">默认存储空间已满,请切换到外部SD卡.</string>
     <string name="exsd_spaceIsLow_content" product="default">外部SD卡存储空间已满,请切换到默认存储.</string>
+    <string name="pref_qr_code_scanner">扫码</string>
+    <string name="qr_code_action_text">用浏览器打开</string>
+    <string name="bar_code_action_text">复制文本</string>
+    <string name="qr_action_button_text">打开</string>
+    <string name="bar_action_button_text">复制</string>
+    <string name="qr_bar_error_action_text">错误</string>
+    <string name="toast_no_browser_on_device">设备里没找到浏览器</string>
+    <string name="toast_copy_success">已复制文本到剪贴板</string>
+    <string name="toast_scan_error">扫描失败</string>
+    <string name="toast_config_camera_failed">配置相机失败</string>
+    <string name="toast_no_back_camera">没有检测到后置摄像头</string>
 </resources>

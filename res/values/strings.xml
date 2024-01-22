@@ -1047,4 +1047,15 @@
     <!-- Low-memory dialog message [CHAR LIMIT=NONE] -->
     <string name="flash_spaceIsLow_content" product="default">Your Default Storage is running out of space. Change Storage To External SD.</string>
     <string name="exsd_spaceIsLow_content" product="default">Your External SD is running out of space. Change Storage To Default Storage.</string>
+    <string name="pref_qr_code_scanner">Scan QR Code</string>
+    <string name="qr_code_action_text">Open with Browser</string>
+    <string name="bar_code_action_text">Copy Text</string>
+    <string name="qr_action_button_text">Open</string>
+    <string name="bar_action_button_text">Copy</string>
+    <string name="qr_bar_error_action_text">Error</string>
+    <string name="toast_no_browser_on_device">No browser found on device.</string>
+    <string name="toast_copy_success">Copy success.</string>
+    <string name="toast_scan_error">Scan failed.</string>
+    <string name="toast_config_camera_failed">Config camera failed.</string>
+    <string name="toast_no_back_camera">No back camera found.</string>
  </resources>
