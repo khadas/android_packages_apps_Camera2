@@ -830,6 +830,7 @@ public class CaptureModule extends CameraModule implements
         cancelCountDown();
         mPaused = true;
         mHeadingSensor.deactivate();
+        mOneCameraManager.clearAvailabilityCallback(this);
 
         mAppController.removePreviewAreaSizeChangedListener(mUI);
         mAppController.removePreviewAreaSizeChangedListener(mPreviewAreaChangedListener);
@@ -859,7 +860,7 @@ public class CaptureModule extends CameraModule implements
             mSession.cancel();
             mSession = null;
         }
-            
+
         mCameraHandler.removeCallbacksAndMessages(null);
         mCameraHandler.getLooper().quitSafely();
     }

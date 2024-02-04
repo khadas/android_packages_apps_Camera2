@@ -167,6 +167,11 @@ public class LegacyOneCameraManagerImpl implements OneCameraManager {
         // Do nothing
     }
 
+    @Override
+    public void clearAvailabilityCallback(AvailabilityCallback callback) {
+        // Do nothing
+    }
+
     public OneCameraCharacteristics computeCameraCharacteristics(CameraId key)
           throws OneCameraAccessException  {
         OneCameraCharacteristics characteristics;

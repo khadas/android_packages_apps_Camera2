@@ -131,6 +131,12 @@ public class Camera2OneCameraManagerImpl extends CameraManager.AvailabilityCallb
         mCameraManager.registerAvailabilityCallback(this, handler);
     }
 
+    @Override
+    public void clearAvailabilityCallback(AvailabilityCallback callback) {
+        mAvailabilityCallback = callback;
+        mCameraManager.unregisterAvailabilityCallback(this);
+    }
+
     public CameraCharacteristics getCameraCharacteristics(
           @Nonnull CameraId key)
           throws OneCameraAccessException {

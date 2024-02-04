@@ -63,6 +63,8 @@ public interface OneCameraManager {
 
     public void setAvailabilityCallback(AvailabilityCallback callback, Handler handler);
 
+    public void clearAvailabilityCallback(AvailabilityCallback callback);
+
     public interface AvailabilityCallback {
         public void onCameraAccessPrioritiesChanged();
     }
