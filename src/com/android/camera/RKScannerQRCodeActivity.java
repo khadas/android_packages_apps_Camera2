@@ -28,6 +28,8 @@ import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.util.Size;
 import android.view.TextureView;
@@ -63,13 +65,35 @@ public class RKScannerQRCodeActivity extends Activity implements
         return configuration.orientation == Configuration.ORIENTATION_LANDSCAPE;
     }
 
+    private Handler mHandler = new Handler()
+    {
+        public void handleMessage(Message msg)
+        {
+            if (msg.what == CODE_RESULT_ACTION_OPEN_URL) {
+                mBottomLinearLayout.setVisibility(View.VISIBLE);
+                mQrActionTextView.setText(getString(R.string.qr_code_action_text));
+                mQrResultTextView.setText((String)msg.obj);
+                mQrActionBtn.setVisibility(View.VISIBLE);
+                mQrActionBtn.setText(getString(R.string.qr_action_button_text));
+            } else if (msg.what == CODE_RESULT_ACTION_COPY_TEXT) {
+                mBottomLinearLayout.setVisibility(View.VISIBLE);
+                mQrActionTextView.setText(getString(R.string.bar_code_action_text));
+                mQrResultTextView.setText((String)msg.obj);
+                mQrActionBtn.setVisibility(View.VISIBLE);
+                mQrActionBtn.setText(getString(R.string.bar_action_button_text));
+            } else if (msg.what == CODE_RESULT_ACTION_ERROR) {
+                mBottomLinearLayout.setVisibility(View.INVISIBLE);
+                Toast.makeText(getBaseContext(), getString(R.string.toast_scan_error), Toast.LENGTH_SHORT).show();
+            }
+        }
+    };
+
     @Override
     protected void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         setContentView(R.layout.activity_scanner_qr_code);
 
         mTextureView = (TextureView) findViewById(R.id.preview_view);
-        mTextureView.setSurfaceTextureListener(this);
         mDecorateView = (QrDecorateView) findViewById(R.id.decorate_view);
         mBottomLinearLayout = (LinearLayout) findViewById(R.id.bottm_view);
         mQrResultTextView = (TextView) findViewById(R.id.result_view);
@@ -92,7 +116,7 @@ public class RKScannerQRCodeActivity extends Activity implements
                     clipboard.setPrimaryClip(clip);
                     Toast.makeText(getBaseContext(), getString(R.string.toast_copy_success), Toast.LENGTH_SHORT).show();
                 }
-
+                initCamera();
             }
         });
     }
@@ -100,12 +124,19 @@ public class RKScannerQRCodeActivity extends Activity implements
     @Override
     protected void onResume() {
         super.onResume();
+        if (mTextureView.isAvailable()) {
+            Log.d(TAG, "isAvailable: ");
+            initCamera();
+        } else {
+            mTextureView.setSurfaceTextureListener(this);
+        }
         mBottomLinearLayout.setVisibility(View.INVISIBLE);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        Log.d(TAG, "onPause");
         destroyCamera();
     }
 
@@ -117,7 +148,7 @@ public class RKScannerQRCodeActivity extends Activity implements
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-        initCamera(surface);
+        initCamera();
     }
 
     @Override
@@ -168,29 +199,27 @@ public class RKScannerQRCodeActivity extends Activity implements
     @Override
     public void handleSuccessfulResult(String qrCode) {
         Log.d(TAG, "qrCode:" + qrCode);
+        Message message = mHandler.obtainMessage();
         if (isURL(qrCode)) {
-            mBottomLinearLayout.setVisibility(View.VISIBLE);
-            mQrActionTextView.setText(getString(R.string.qr_code_action_text));
-            mQrResultTextView.setText(qrCode);
-            mQrActionBtn.setVisibility(View.VISIBLE);
-            mQrActionBtn.setText(getString(R.string.qr_action_button_text));
             mCodeResult = qrCode;
             mCodeResultState = CODE_RESULT_ACTION_OPEN_URL;
+            message.obj = qrCode;
+            message.what = CODE_RESULT_ACTION_OPEN_URL;
+            mHandler.sendMessage(message);
         } else {
             if (isText(qrCode)) {
-                mBottomLinearLayout.setVisibility(View.VISIBLE);
-                mQrActionTextView.setText(getString(R.string.bar_code_action_text));
-                mQrResultTextView.setText(qrCode);
-                mQrActionBtn.setVisibility(View.VISIBLE);
-                mQrActionBtn.setText(getString(R.string.bar_action_button_text));
                 mCodeResult = qrCode;
                 mCodeResultState = CODE_RESULT_ACTION_COPY_TEXT;
+                message.obj = qrCode;
+                message.what = CODE_RESULT_ACTION_COPY_TEXT;
+                mHandler.sendMessage(message);
             } else {
-                mBottomLinearLayout.setVisibility(View.INVISIBLE);
-                Toast.makeText(this, getString(R.string.toast_scan_error), Toast.LENGTH_SHORT).show();
                 mCodeResultState = CODE_RESULT_ACTION_ERROR;
+                message.what = CODE_RESULT_ACTION_ERROR;
+                mHandler.sendMessage(message);
             }
         }
+        destroyCamera();
     }
 
     @Override
@@ -198,15 +227,17 @@ public class RKScannerQRCodeActivity extends Activity implements
         destroyCamera();
     }
 
-    private void initCamera(SurfaceTexture surface) {
+    private void initCamera() {
+        Log.d(TAG, "initCamera");
         // Check if the camera has already created.
         if (mCamera == null) {
             mCamera = new QrCamera(getBaseContext(), this);
-            mCamera.start(surface);
+            mCamera.start(mTextureView);
         }
     }
 
     private void destroyCamera() {
+        Log.d(TAG, "destroyCamera");
         if (mCamera != null) {
             mCamera.stop();
             mCamera = null;

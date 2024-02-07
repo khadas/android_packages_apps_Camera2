@@ -38,6 +38,7 @@ import android.util.ArrayMap;
 import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
+import android.view.TextureView;
 import android.view.WindowManager;
 import android.widget.Toast;
 import com.android.camera2.R;
@@ -57,7 +58,7 @@ import java.util.Map;
 public class QrCamera extends Handler {
     private static final String TAG = "QrCamera";
 
-    private final int maxPreviewSize = 1920 * 1080;
+    private final int maxPreviewSize = 1280 * 720;
 
     private static Map<DecodeHintType, List<BarcodeFormat>> HINTS = new ArrayMap<>();
     private static List<BarcodeFormat> FORMATS = new ArrayList<>();
@@ -88,6 +89,7 @@ public class QrCamera extends Handler {
     private QrYuvLuminanceSource mImage;
     private SurfaceTexture mSurface;
     private int mCameraOrientation;
+    private TextureView mTextureView;
 
     public QrCamera(Context context, ScannerCallback callback) {
         mContext = context;
@@ -121,9 +123,13 @@ public class QrCamera extends Handler {
     };
 
     protected void startBackgroundThread() {
-        mBackgroundThread = new HandlerThread("Camera Background");
-        mBackgroundThread.start();
-        mBackgroundHandler = new Handler(mBackgroundThread.getLooper());
+        if (mBackgroundThread == null) {
+            mBackgroundThread = new HandlerThread("Camera Background");
+            mBackgroundThread.start();
+        }
+        if (mBackgroundHandler == null) {
+            mBackgroundHandler = new Handler(mBackgroundThread.getLooper());
+        }
     }
 
     protected void stopBackgroundThread() {
@@ -132,10 +138,12 @@ public class QrCamera extends Handler {
             try {
                 mBackgroundThread.join();
                 mBackgroundThread = null;
-                mBackgroundHandler = null;
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+        }
+        if (mBackgroundHandler != null) {
+            mBackgroundHandler = null;
         }
     }
 
@@ -145,13 +153,15 @@ public class QrCamera extends Handler {
      *
      * @param surface The surface to be used for live preview.
      */
-    public void start(SurfaceTexture surface) {
-        initCamera(surface);
+    public void start(TextureView textureView) {
+        initCamera(textureView);
     }
 
-    private boolean initCamera(SurfaceTexture surface) {
-        mSurface = surface;
+    private boolean initCamera(TextureView textureView) {
+        mTextureView = textureView;
+        String frontCameraId = null;
         String backCameraId = null;
+        String extCameraId = null;
         if (mCameraManager == null) {
             return false;
         }
@@ -160,16 +170,32 @@ public class QrCamera extends Handler {
             for (String cameraId : mCameraManager.getCameraIdList()) {
                 CameraCharacteristics characteristics = mCameraManager.getCameraCharacteristics(cameraId);
                 Integer facing = characteristics.get(CameraCharacteristics.LENS_FACING);
-                if (facing != null && facing == CameraCharacteristics.LENS_FACING_BACK) {
+                if (facing == CameraCharacteristics.LENS_FACING_FRONT) {
+                    frontCameraId = cameraId;
+                } else if (facing == CameraCharacteristics.LENS_FACING_BACK) {
                     backCameraId = cameraId;
+                } else if (facing == CameraCharacteristics.LENS_FACING_EXTERNAL) {
+                    extCameraId = cameraId;
                 }
             }
             if (null != backCameraId && !backCameraId.isEmpty()) {
-                mCameraManager.openCamera(backCameraId, mCameraStateCallback, mBackgroundHandler);
                 CameraCharacteristics characteristics = mCameraManager.getCameraCharacteristics(backCameraId);
                 StreamConfigurationMap configMap = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
                 Size[] supportedSizes = configMap.getOutputSizes(android.graphics.ImageFormat.YUV_420_888);
                 mPreviewSize = getBestPreviewSize(supportedSizes);
+                mCameraManager.openCamera(backCameraId, mCameraStateCallback, mBackgroundHandler);
+            } else if (null != frontCameraId && !frontCameraId.isEmpty()) {
+                CameraCharacteristics characteristics = mCameraManager.getCameraCharacteristics(backCameraId);
+                StreamConfigurationMap configMap = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+                Size[] supportedSizes = configMap.getOutputSizes(android.graphics.ImageFormat.YUV_420_888);
+                mPreviewSize = getBestPreviewSize(supportedSizes);
+                mCameraManager.openCamera(frontCameraId, mCameraStateCallback, mBackgroundHandler);
+            } else if (null != extCameraId && !extCameraId.isEmpty()) {
+                CameraCharacteristics characteristics = mCameraManager.getCameraCharacteristics(backCameraId);
+                StreamConfigurationMap configMap = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+                Size[] supportedSizes = configMap.getOutputSizes(android.graphics.ImageFormat.YUV_420_888);
+                mPreviewSize = getBestPreviewSize(supportedSizes);
+                mCameraManager.openCamera(extCameraId, mCameraStateCallback, mBackgroundHandler);
             } else {
                 Log.e(TAG, "No back Camera.");
                 Toast.makeText(mContext, mContext.getString(R.string.toast_no_back_camera), Toast.LENGTH_SHORT).show();
@@ -187,6 +213,7 @@ public class QrCamera extends Handler {
      * the surface is being destroyed.
      */
     public void stop() {
+        Log.d(TAG, "stop");
         closeCamera();
         stopBackgroundThread();
     }
@@ -259,7 +286,7 @@ public class QrCamera extends Handler {
             mImageReader = ImageReader.newInstance(mPreviewSize.getWidth(), mPreviewSize.getHeight(),
                     ImageFormat.YUV_420_888, 2);
             mImageReader.setOnImageAvailableListener(mReaderListener, mBackgroundHandler);
-            Surface textureSurface = new Surface(mSurface);
+            Surface textureSurface = new Surface(mTextureView.getSurfaceTexture());
             Surface imageSurface = mImageReader.getSurface();
             mCaptureRequestBuilder.addTarget(textureSurface);
             mCaptureRequestBuilder.addTarget(imageSurface);
@@ -368,14 +395,17 @@ public class QrCamera extends Handler {
                     } catch (ReaderException e) {
                         // No logging since every time the reader cannot decode the
                         // image, this ReaderException will be thrown.
+                        e.printStackTrace();
                     } finally {
                         mReader.reset();
+                        if (image != null) {
+                            image.close();
+                        }
                     }
                     if (qrCode != null) {
                         if (mScannerCallback.isValid(qrCode.getText())) {
                             mScannerCallback.handleSuccessfulResult(qrCode.getText());
                             image.close();
-                            stop();
                             return;
                         }
                     }
@@ -409,8 +439,7 @@ public class QrCamera extends Handler {
         final Rect frame = mScannerCallback.getFramePosition(mPreviewSize, mCameraOrientation);
         final QrYuvLuminanceSource image = new QrYuvLuminanceSource(rotatedData,
                 width, height);
-        return (QrYuvLuminanceSource)
-                image.crop(frame.left, frame.top, frame.width(), frame.height());
+        return image;
     }
 
     /**
