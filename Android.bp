@@ -19,6 +19,7 @@ android_app {
 		"glide",
 		"guava",
 		"jsr305",
+        "zxing-core-1.7",
     ],
 
 
