@@ -105,6 +105,7 @@ import android.provider.MediaStore;
 
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import android.util.ArraySet;
 
 import javax.annotation.Nonnull;
 
@@ -1456,8 +1457,9 @@ public class CaptureModule extends CameraModule implements
         // Called by assistant.
         Intent intent = mCameraActivity.getIntent();
         String action = intent.getAction();
+        ArraySet<String> mCategories = (ArraySet<String>) intent.getCategories();
         if (MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA.equals(action)) {
-            boolean shouldeTakePic = mCameraActivity.isVoiceInteractionRoot() &&
+            boolean shouldeTakePic = mCategories != null && mCategories.contains(Intent.CATEGORY_VOICE) &&
                 !intent.getBooleanExtra("com.google.assistant.extra.CAMERA_OPEN_ONLY", false);
             if (shouldeTakePic) {
                 int timerDuration = intent.getIntExtra("com.google.assistant.extra.TIMER_DURATION_SECONDS", 0);

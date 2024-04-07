@@ -29,6 +29,7 @@ public class VoiceCaptureActivity extends Activity {
         super.onCreate(bundle);
         Intent intent = new Intent(this, CameraActivity.class);
         intent.setAction(getIntent().getAction());
+        intent.putExtras(getIntent());
 	if (getIntent().getCategories() != null)
             for (String category : getIntent().getCategories())
                 intent.addCategory(category);
