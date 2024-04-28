@@ -295,6 +295,8 @@ public class CameraActivity extends QuickActivity
     /** Holds configuration for various OneCamera features. */
     private OneCameraFeatureConfig mFeatureConfig;
 
+    private Toast mBackToast;
+
     private static final int LIGHTS_OUT_DELAY_MS = 4000;
     private final int BASE_SYS_UI_VISIBILITY =
             View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
@@ -1562,6 +1564,7 @@ public class CameraActivity extends QuickActivity
         AndroidContext.initialize(this);
         Profile profile = mProfiler.create("CameraActivity.onCreateTasks").start();
         CameraPerformanceTracker.onEvent(CameraPerformanceTracker.ACTIVITY_START);
+        mBackToast = Toast.makeText(this, R.string.back_to_exit_msg, Toast.LENGTH_SHORT);
         mOnCreateTime = System.currentTimeMillis();
         mAppContext = getApplicationContext();
         mMainHandler = new MainHandler(this, getMainLooper());
@@ -2486,6 +2489,7 @@ public class CameraActivity extends QuickActivity
 
         // Ensure anything that checks for "isPaused" returns true.
         mPaused = true;
+        mBackToast = null;
         if (mFilmstripController != null)
             mFilmstripController.setDataAdapter(null);
         if (mDataAdapter != null) {
@@ -2628,7 +2632,9 @@ public class CameraActivity extends QuickActivity
                     return;
                 }
                 if (mBackKeyPressTimes == 0) {
-                    Toast.makeText(this, R.string.back_to_exit_msg, Toast.LENGTH_SHORT).show();
+                    if (mBackToast != null) {
+                        mBackToast.show();
+                    }
                     mBackKeyPressTimes++;
                     mMainHandler.postDelayed(new Runnable() {
                         
@@ -2636,6 +2642,9 @@ public class CameraActivity extends QuickActivity
                         public void run() {
                             // TODO Auto-generated method stub
                             mBackKeyPressTimes = 0;
+                            if (mBackToast != null) {
+                                mBackToast.cancel();
+                            }
                         }
                     }, 2000);
                     return;
@@ -2643,8 +2652,12 @@ public class CameraActivity extends QuickActivity
                 if (mCameraAppUI != null) {
                     mCameraAppUI.pauseTextViewHelper();
                 }
-                if (mBackKeyPressTimes >= 1)
+                if (mBackKeyPressTimes >= 1) {
+                    if (mBackToast != null) {
+                        mBackToast.cancel();
+                    }
                     super.onBackPressed();
+                }
             }
         }
     }
