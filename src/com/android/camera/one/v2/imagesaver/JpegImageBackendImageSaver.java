@@ -128,10 +128,6 @@ public class JpegImageBackendImageSaver implements ImageSaver.Builder {
 
                 // Downsample and convert the JPEG payload to a reasonably-sized
                 // Bitmap
-                /*BitmapFactory.Options options = new BitmapFactory.Options();
-                options.inSampleSize = JPEG_DOWNSAMPLE_FOR_FAST_INDICATOR;
-                final Bitmap bitmap = BitmapFactory.decodeByteArray(payload.data, 0,
-                        payload.data.length, options);*/
                 ExifInterface exif = null;
                 try {
                     exif = new ExifInterface();
@@ -140,15 +136,26 @@ public class JpegImageBackendImageSaver implements ImageSaver.Builder {
                     Log.w(TAG, "Could not read exif", e);
                     exif = null;
                 }
-                final Bitmap bitmap = exif.getThumbnailBitmap();
+                Bitmap bitmap = exif.getThumbnailBitmap();
+                if (bitmap == null) {
+                    BitmapFactory.Options options = new BitmapFactory.Options();
+                    options.inSampleSize = JPEG_DOWNSAMPLE_FOR_FAST_INDICATOR;
+                    bitmap = BitmapFactory.decodeByteArray(payload.data, 0,
+                            payload.data.length, options);
+                }
 
-                // If the rotation is implemented as an EXIF flag, we need to
-                // pass this information onto the UI call, since the rotation is
-                // NOT applied to the bitmap directly.
-                int rotation = Exif.getOrientation(payload.data);
-                mSession.updateCaptureIndicatorThumbnail(bitmap, rotation);
-                // Send image to remote devices
-                mPictureSaverCallback.onRemoteThumbnailAvailable(payload.data);
+                if (bitmap != null) {
+                    // If the rotation is implemented as an EXIF flag, we need to
+                    // pass this information onto the UI call, since the rotation is
+                    // NOT applied to the bitmap directly.
+                    int rotation = Exif.getOrientation(payload.data);
+                    mSession.updateCaptureIndicatorThumbnail(bitmap, rotation);
+                    // Send image to remote devices
+                    mPictureSaverCallback.onRemoteThumbnailAvailable(payload.data);
+                } else {
+                    Log.w(TAG, "Could not get bitmap for updating thumbnail.");
+                }
+
             }
 
         }
