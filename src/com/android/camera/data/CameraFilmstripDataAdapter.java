@@ -59,6 +59,8 @@ public class CameraFilmstripDataAdapter implements LocalFilmstripDataAdapter {
 
     private FilmstripItem mFilmstripItemToDelete;
 
+    private Object mLock = new Object();
+
     public CameraFilmstripDataAdapter(Context context,
             PhotoItemFactory photoItemFactory, VideoItemFactory videoItemFactory) {
         mContext = context;
@@ -285,7 +287,9 @@ public class CameraFilmstripDataAdapter implements LocalFilmstripDataAdapter {
         if (list.size() == 0 && mFilmstripItems.size() == 0) {
             return;
         }
-        mFilmstripItems = list;
+        synchronized (mLock) {
+            mFilmstripItems = list;
+        }
         if (mListener != null) {
             mListener.onFilmstripItemLoaded();
         }
@@ -499,12 +503,15 @@ public class CameraFilmstripDataAdapter implements LocalFilmstripDataAdapter {
         protected List<Integer> doInBackground(Integer... dataId) {
             List<Integer> updatedList = new ArrayList<>();
             for (Integer id : dataId) {
-                if (id < 0 || id >= mFilmstripItems.size()) {
+                if (id < 0 || id >= mFilmstripItems.size() ||
+                        mFilmstripItems.size() == 0) {
                     continue;
                 }
-                final FilmstripItem data = mFilmstripItems.get(id);
-                if (MetadataLoader.loadMetadata(mContext, data) || mForceUpdate) {
-                    updatedList.add(id);
+                synchronized (mLock) {
+                    final FilmstripItem data = mFilmstripItems.get(id);
+                    if (MetadataLoader.loadMetadata(mContext, data) || mForceUpdate) {
+                        updatedList.add(id);
+                    }
                 }
             }
             return updatedList;
