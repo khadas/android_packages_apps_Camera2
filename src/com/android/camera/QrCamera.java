@@ -185,13 +185,13 @@ public class QrCamera extends Handler {
                 mPreviewSize = getBestPreviewSize(supportedSizes);
                 mCameraManager.openCamera(backCameraId, mCameraStateCallback, mBackgroundHandler);
             } else if (null != frontCameraId && !frontCameraId.isEmpty()) {
-                CameraCharacteristics characteristics = mCameraManager.getCameraCharacteristics(backCameraId);
+                CameraCharacteristics characteristics = mCameraManager.getCameraCharacteristics(frontCameraId);
                 StreamConfigurationMap configMap = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
                 Size[] supportedSizes = configMap.getOutputSizes(android.graphics.ImageFormat.YUV_420_888);
                 mPreviewSize = getBestPreviewSize(supportedSizes);
                 mCameraManager.openCamera(frontCameraId, mCameraStateCallback, mBackgroundHandler);
             } else if (null != extCameraId && !extCameraId.isEmpty()) {
-                CameraCharacteristics characteristics = mCameraManager.getCameraCharacteristics(backCameraId);
+                CameraCharacteristics characteristics = mCameraManager.getCameraCharacteristics(extCameraId);
                 StreamConfigurationMap configMap = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
                 Size[] supportedSizes = configMap.getOutputSizes(android.graphics.ImageFormat.YUV_420_888);
                 mPreviewSize = getBestPreviewSize(supportedSizes);
