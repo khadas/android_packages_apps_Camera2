@@ -93,7 +93,7 @@ public class OrientationManagerImpl implements OrientationManager {
 
     public void pause() {
         mOrientationListener.disable();
-        mLastDeviceOrientation = DeviceOrientation.CLOCKWISE_0;
+        //mLastDeviceOrientation = DeviceOrientation.CLOCKWISE_0;
     }
 
     @Override
