@@ -32,6 +32,9 @@ import android.graphics.Point;
 import android.graphics.RectF;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraManager;
+import android.hardware.camera2.CameraAccessException;
 import android.location.Location;
 import android.media.AudioManager;
 import android.media.CamcorderProfile;
@@ -361,6 +364,11 @@ public class VideoModule extends CameraModule
         SettingsManager settingsManager = mActivity.getSettingsManager();
         mCameraId = settingsManager.getInteger(SettingsManager.SCOPE_GLOBAL,
                                                Keys.KEY_CAMERA_ID);
+        Log.d(TAG, "init mCameraId= " + mCameraId);
+        mCameraId = getAvailableFacingFromCameraId(mCameraId);
+        Log.d(TAG, "getAvailableFacingFromCameraId done mCameraId:" + mCameraId);
+        settingsManager.set(SettingsManager.SCOPE_GLOBAL,
+                            Keys.KEY_CAMERA_ID, mCameraId);
 
         /*
          * To reduce startup time, we start the preview in another thread.
@@ -2116,7 +2124,6 @@ public class VideoModule extends CameraModule
         }
 
         mPaused = false;
-        Log.d(TAG,"resume");
         if(!mSoundplayer){
             mCountdownSoundPlayer = new SoundPlayer(mAppController.getAndroidContext());
             mSoundplayer = true;
@@ -2478,5 +2485,37 @@ public class VideoModule extends CameraModule
     public void onNonDecorWindowSizeChanged() {
         // TODO Auto-generated method stub
         
+    }
+
+    private int getAvailableFacingFromCameraId(int cameraId) {
+        try {
+            CameraManager manager = (CameraManager) mActivity.getSystemService(Context.CAMERA_SERVICE);
+            String[] cameraIds = manager.getCameraIdList();
+            if (cameraIds.length > 0) {
+                int id = 0;
+                for (String idStr : cameraIds) {
+                    CameraCharacteristics characteristics = manager.getCameraCharacteristics(idStr);
+                    int mLensFacing = characteristics.get(CameraCharacteristics.LENS_FACING);
+                    id = mLensFacing == CameraCharacteristics.LENS_FACING_BACK ? 0 : 1;
+                    if (id == cameraId) {
+                        return cameraId;
+                    }
+                }
+                try {
+                    id = Integer.valueOf(cameraIds[0]);
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                    return 0;
+                }
+                return id;
+            } else {
+                Log.e(TAG, "No camera found.");
+                return 0;
+            }
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+            Log.e(TAG, "Find camera facing failed !!!");
+            return 0;
+        }
     }
 }
