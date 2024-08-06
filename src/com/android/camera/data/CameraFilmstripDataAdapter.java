@@ -164,23 +164,25 @@ public class CameraFilmstripDataAdapter implements LocalFilmstripDataAdapter {
 
     @Override
     public void removeAt(int index) {
-        boolean isVideo = mFilmstripItems.get(index).getData().getMimeType().contains("video");
-        String title = mFilmstripItems.get(index).getData().getTitle();
-        FilmstripItem d = mFilmstripItems.remove(index);
-        if (isVideo) {
-            mVideoItemFactory.deleteForAllVideo(title);
-        } else {
-            mPhotoItemFactory.deleteForAllPhoto(title);
-        }
-        if (d == null) {
-            return;
-        }
+        synchronized (mLock) {
+            boolean isVideo = mFilmstripItems.get(index).getData().getMimeType().contains("video");
+            String title = mFilmstripItems.get(index).getData().getTitle();
+            FilmstripItem d = mFilmstripItems.remove(index);
+            if (isVideo) {
+                mVideoItemFactory.deleteForAllVideo(title);
+            } else {
+                mPhotoItemFactory.deleteForAllPhoto(title);
+            }
+            if (d == null) {
+                return;
+            }
 
-        // Delete previously removed data first.
-        executeDeletion();
-        mFilmstripItemToDelete = d;
-        if (mListener != null)
-            mListener.onFilmstripItemRemoved(index, d);
+            // Delete previously removed data first.
+            executeDeletion();
+            mFilmstripItemToDelete = d;
+            if (mListener != null)
+                mListener.onFilmstripItemRemoved(index, d);
+        }
     }
 
     @Override
@@ -257,7 +259,9 @@ public class CameraFilmstripDataAdapter implements LocalFilmstripDataAdapter {
     public void updateItemAt(final int pos, FilmstripItem item) {
         final Uri uri = item.getData().getUri();
         int oldPos = findByContentUri(uri);
-        mFilmstripItems.set(pos, item);
+        synchronized (mLock) {
+            mFilmstripItems.set(pos, item);
+        }
         updateMetadataAt(pos, true /* forceItemUpdate */);
 
         if ((oldPos != -1) && (oldPos != pos)) {
@@ -276,7 +280,9 @@ public class CameraFilmstripDataAdapter implements LocalFilmstripDataAdapter {
         for (; pos < mFilmstripItems.size()
                 && comp.compare(item, mFilmstripItems.get(pos)) > 0; pos++) {
         }
-        mFilmstripItems.add(pos, item);
+        synchronized (mLock) {
+            mFilmstripItems.add(pos, item);
+        }
         if (mListener != null) {
             mListener.onFilmstripItemInserted(pos, item);
         }
@@ -507,11 +513,9 @@ public class CameraFilmstripDataAdapter implements LocalFilmstripDataAdapter {
                         mFilmstripItems.size() == 0) {
                     continue;
                 }
-                synchronized (mLock) {
-                    final FilmstripItem data = mFilmstripItems.get(id);
-                    if (MetadataLoader.loadMetadata(mContext, data) || mForceUpdate) {
-                        updatedList.add(id);
-                    }
+                final FilmstripItem data = mFilmstripItems.get(id);
+                if (MetadataLoader.loadMetadata(mContext, data) || mForceUpdate) {
+                    updatedList.add(id);
                 }
             }
             return updatedList;
