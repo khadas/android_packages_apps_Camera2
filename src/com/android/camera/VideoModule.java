@@ -2492,22 +2492,17 @@ public class VideoModule extends CameraModule
             CameraManager manager = (CameraManager) mActivity.getSystemService(Context.CAMERA_SERVICE);
             String[] cameraIds = manager.getCameraIdList();
             if (cameraIds.length > 0) {
-                int id = 0;
-                for (String idStr : cameraIds) {
-                    CameraCharacteristics characteristics = manager.getCameraCharacteristics(idStr);
-                    int mLensFacing = characteristics.get(CameraCharacteristics.LENS_FACING);
-                    id = mLensFacing == CameraCharacteristics.LENS_FACING_BACK ? 0 : 1;
-                    if (id == cameraId) {
-                        return cameraId;
-                    }
-                }
-                try {
-                    id = Integer.valueOf(cameraIds[0]);
-                } catch (NumberFormatException e) {
-                    e.printStackTrace();
+                if (cameraIds.length == 1) {
+                    Log.e(TAG, "Only one camera found.");
                     return 0;
                 }
-                return id;
+                for (String idStr : cameraIds) {
+                    CameraCharacteristics characteristics = manager.getCameraCharacteristics(idStr);
+                    int lensFacing = characteristics.get(CameraCharacteristics.LENS_FACING);
+                    if (lensFacing == cameraId) {
+                        return lensFacing;
+                    }
+                }
             } else {
                 Log.e(TAG, "No camera found.");
                 return 0;
@@ -2517,5 +2512,6 @@ public class VideoModule extends CameraModule
             Log.e(TAG, "Find camera facing failed !!!");
             return 0;
         }
+        return 0;
     }
 }

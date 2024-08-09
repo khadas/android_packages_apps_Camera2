@@ -748,18 +748,6 @@ public class CaptureModule extends CameraModule implements
             mCameraFacing = getFacingFromCameraId(
                 mSettingsManager.getInteger(SettingsManager.SCOPE_GLOBAL, Keys.KEY_CAMERA_ID));
         }
-        CameraManager manager = (CameraManager) mCameraActivity.getSystemService(Context.CAMERA_SERVICE);
-        try {
-            if (manager.getCameraIdList().length > 1) {
-                mSettingsManager.set(SettingsManager.SCOPE_GLOBAL, Keys.KEY_CAMERA_ID,
-                        mCameraFacing == Facing.BACK ? 0 : 1);
-            } else {
-                mSettingsManager.set(SettingsManager.SCOPE_GLOBAL, Keys.KEY_CAMERA_ID, 0);
-            }
-        } catch (CameraAccessException e) {
-            e.printStackTrace();
-            return;
-        }
 
         if (mShowErrorAndFinish) {
             return;
@@ -1748,17 +1736,30 @@ public class CaptureModule extends CameraModule implements
     private Facing getFacingFromCameraId(int cameraId) {
         try {
             CameraManager manager = (CameraManager) mCameraActivity.getSystemService(Context.CAMERA_SERVICE);
-            String cameraIds = manager.getCameraIdList()[cameraId];
-            Log.d(TAG,"cameraIds="+cameraIds);
-            CameraCharacteristics characteristics = manager.getCameraCharacteristics(cameraIds);
-            int mLensFacing = characteristics.get(CameraCharacteristics.LENS_FACING);
-            // cameraservice map external to front for legacy API
-            return (mLensFacing == CameraCharacteristics.LENS_FACING_BACK) ? Facing.BACK : Facing.FRONT;
+            String[] cameraIds = manager.getCameraIdList();
+            if (cameraIds.length > 0) {
+                if (cameraIds.length == 1) {
+                    Log.e(TAG, "Only one camera found.");
+                    String oneCameraId = manager.getCameraIdList()[0];
+                    CameraCharacteristics oneCharacteristics = manager.getCameraCharacteristics(oneCameraId);
+                    int oneLensFacing = oneCharacteristics.get(CameraCharacteristics.LENS_FACING);
+                    return (oneLensFacing == CameraCharacteristics.LENS_FACING_BACK) ? Facing.BACK : Facing.FRONT;
+                }
+                for (String idStr : cameraIds) {
+                    CameraCharacteristics characteristics = manager.getCameraCharacteristics(idStr);
+                    int lensFacing = characteristics.get(CameraCharacteristics.LENS_FACING);
+                    if (lensFacing == cameraId) {
+                        // cameraservice map external to front for legacy API
+                        return (lensFacing == CameraCharacteristics.LENS_FACING_BACK) ? Facing.BACK : Facing.FRONT;
+                    }
+                }
+            }
         } catch (CameraAccessException e) {
             e.printStackTrace();
             Log.e(TAG,"find camera facing failed !!!");
             return Facing.BACK;
         }
+        return Facing.BACK;
         /*
         return mAppController.getCameraProvider().getCharacteristics(cameraId)
                 .isFacingFront() ? Facing.FRONT : Facing.BACK;
