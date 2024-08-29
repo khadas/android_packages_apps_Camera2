@@ -57,10 +57,10 @@ public class FilmstripContentQueries {
         public I get(Cursor cursor);
     }
 
-    public static List<PhotoItem> forAllCameraPathPhoto(ContentResolver contentResolver,
+    public synchronized static List<PhotoItem> forAllCameraPathPhoto(ContentResolver contentResolver,
           Uri contentUri, String[] projection, long minimumId, String orderBy,
           CursorToFilmstripItemFactory<PhotoItem> factory) {
-        if (isDebugOn) Log.e(TAG, "---zc forAllCameraPathPhoto contentUri:" + contentUri + ",minimumId:" + minimumId);
+        if (isDebugOn) Log.e(TAG, "forAllCameraPathPhoto contentUri:" + contentUri + ",minimumId:" + minimumId);
         String selection = SELECT_BY_PATH + " AND " + MediaStore.MediaColumns._ID + " > ?" +
                 " AND " + OWNER_PACKAGE_NAME + " = ?";
         String[] selectionArgs = new String[] { PHOTO_PATH, Long.toString(minimumId), CAMERA2_PACKAGENAME };
@@ -68,17 +68,17 @@ public class FilmstripContentQueries {
         Cursor cursor = contentResolver.query(contentUri, projection,
               selection, selectionArgs, orderBy);
 
-        if (isDebugOn) Log.e(TAG, "---zc forAllCameraPathPhoto getCount:" + cursor.getCount() + ",mAllImagesCount:" + mAllImagesCount);
+        if (isDebugOn) Log.e(TAG, "forAllCameraPathPhoto getCount:" + cursor.getCount() + ",mAllImagesCount:" + mAllImagesCount);
         if (cursor.getCount() != mAllImagesCount) {
             if (cursor != null) {
-                if (mAllImagesCount ==0) {
+                if (mAllImagesCount == 0) {
                     while (cursor.moveToNext()) {
                         int size = cursor.getInt(PhotoDataQuery.COL_SIZE);
-                        if (isDebugOn)Log.e(TAG, "---zc forAllCameraPathPhoto size1:" + size);
+                        if (isDebugOn)Log.e(TAG, "forAllCameraPathPhoto size1:" + size);
                         if (size > 0) {
                             PhotoItem item = factory.get(cursor);
                             if (item != null) {
-                                if (isDebugOn) Log.e(TAG, "---zc forAllCameraPathPhoto item:" + item.toString());
+                                if (isDebugOn) Log.e(TAG, "forAllCameraPathPhoto item:" + item.toString());
                                 mAllImagesResult.add(item);
                             } else {
                                 final int dataIndex = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
@@ -91,11 +91,11 @@ public class FilmstripContentQueries {
                         if (cursor.getCount() > mAllImagesCount) {
                             cursor.moveToFirst();
                             int size = cursor.getInt(PhotoDataQuery.COL_SIZE);
-                            if (isDebugOn) Log.e(TAG, "---zc forAllCameraPathPhoto size2:" + size);
+                            if (isDebugOn) Log.e(TAG, "forAllCameraPathPhoto size2:" + size);
                             if (size > 0) {
                                 PhotoItem item = factory.get(cursor);
                                 if (item != null) {
-                                    if (isDebugOn) Log.e(TAG, "---zc forAllCameraPathPhoto item:" + item.toString());
+                                    if (isDebugOn) Log.e(TAG, "forAllCameraPathPhoto item:" + item.toString());
                                     mAllImagesResult.add(item);
                                 } else {
                                     final int dataIndex = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
@@ -106,11 +106,11 @@ public class FilmstripContentQueries {
                             mAllImagesResult.clear();
                             while (cursor.moveToNext()) {
                                 int size = cursor.getInt(PhotoDataQuery.COL_SIZE);
-                                if (isDebugOn) Log.e(TAG, "---zc forAllCameraPathPhoto size3:" + size);
+                                if (isDebugOn) Log.e(TAG, "forAllCameraPathPhoto size3:" + size);
                                 if (size > 0) {
                                     PhotoItem item = factory.get(cursor);
                                     if (item != null) {
-                                        if (isDebugOn) Log.e(TAG, "---zc forAllCameraPathPhoto item:" + item.toString());
+                                        if (isDebugOn) Log.e(TAG, "forAllCameraPathPhoto item:" + item.toString());
                                         mAllImagesResult.add(item);
                                     } else {
                                         final int dataIndex = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
@@ -129,7 +129,7 @@ public class FilmstripContentQueries {
                 Log.e(TAG, "images cursor == null");
             }
         } else {
-            if (isDebugOn) Log.e(TAG, "---zc cursor.getCount() == mAllImagesCount");
+            if (isDebugOn) Log.e(TAG, "cursor.getCount() == mAllImagesCount");
         }
         return mAllImagesResult;
     }
@@ -137,7 +137,7 @@ public class FilmstripContentQueries {
     public static List<PhotoItem> forLoadNewCameraPathPhoto(ContentResolver contentResolver,
           Uri contentUri, String[] projection, long minimumId, String orderBy,
           CursorToFilmstripItemFactory<PhotoItem> factory) {
-        if (isDebugOn) Log.e(TAG, "---zc forLoadNewCameraPathPhoto contentUri:" + contentUri + ",minimumId:" + minimumId);
+        if (isDebugOn) Log.e(TAG, "forLoadNewCameraPathPhoto contentUri:" + contentUri + ",minimumId:" + minimumId);
         String selection = SELECT_BY_PATH + " AND " + MediaStore.MediaColumns._ID + " > ?" +
                 " AND " + OWNER_PACKAGE_NAME + " = ?";
         String[] selectionArgs = new String[] { PHOTO_PATH, Long.toString(minimumId), CAMERA2_PACKAGENAME };
@@ -145,14 +145,14 @@ public class FilmstripContentQueries {
         Cursor cursor = contentResolver.query(contentUri, projection,
               selection, selectionArgs, orderBy);
 
-        if (isDebugOn) Log.e(TAG, "---zc forLoadNewCameraPathPhoto getCount:" + cursor.getCount() + ",mLoadNewImagesCount:" + mLoadNewImagesCount);
+        if (isDebugOn) Log.e(TAG, "forLoadNewCameraPathPhoto getCount:" + cursor.getCount() + ",mLoadNewImagesCount:" + mLoadNewImagesCount);
         if (cursor.getCount() != mLoadNewImagesCount) {
             if (cursor != null) {
                 if (mLoadNewImagesCount ==0) {
                     while (cursor.moveToNext()) {
                         PhotoItem item = factory.get(cursor);
                         if (item != null) {
-                            if (isDebugOn) Log.e(TAG, "---zc forLoadNewCameraPathPhoto item:" + item.toString());
+                            if (isDebugOn) Log.e(TAG, "forLoadNewCameraPathPhoto item:" + item.toString());
                             mLoadNewImagesResult.add(item);
                         } else {
                             final int dataIndex = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
@@ -165,7 +165,7 @@ public class FilmstripContentQueries {
                             cursor.moveToFirst();
                             PhotoItem item = factory.get(cursor);
                             if (item != null) {
-                                if (isDebugOn) Log.e(TAG, "---zc forLoadNewCameraPathPhoto item:" + item.toString());
+                                if (isDebugOn) Log.e(TAG, "forLoadNewCameraPathPhoto item:" + item.toString());
                                 mLoadNewImagesResult.add(item);
                             } else {
                                 final int dataIndex = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
@@ -176,7 +176,7 @@ public class FilmstripContentQueries {
                             while (cursor.moveToNext()) {
                                 PhotoItem item = factory.get(cursor);
                                 if (item != null) {
-                                    if (isDebugOn) Log.e(TAG, "---zc forLoadNewCameraPathPhoto item:" + item.toString());
+                                    if (isDebugOn) Log.e(TAG, "forLoadNewCameraPathPhoto item:" + item.toString());
                                     mLoadNewImagesResult.add(item);
                                 } else {
                                     final int dataIndex = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
@@ -194,15 +194,15 @@ public class FilmstripContentQueries {
                 Log.e(TAG, "images cursor == null");
             }
         } else {
-            if (isDebugOn) Log.e(TAG, "---zc cursor.getCount() == mLoadNewImagesCount");
+            if (isDebugOn) Log.e(TAG, "cursor.getCount() == mLoadNewImagesCount");
         }
         return mLoadNewImagesResult;
     }
 
-    public static List<VideoItem> forCameraPathVideo(ContentResolver contentResolver,
+    public synchronized static List<VideoItem> forCameraPathVideo(ContentResolver contentResolver,
           Uri contentUri, String[] projection, long minimumId, String orderBy,
           CursorToFilmstripItemFactory<VideoItem> factory) {
-        if (isDebugOn) Log.e(TAG, "---zc forCameraPathVideo contentUri:" + contentUri + ",minimumId:" + minimumId);
+        if (isDebugOn) Log.e(TAG, "forCameraPathVideo contentUri:" + contentUri + ",minimumId:" + minimumId);
         String selection = SELECT_BY_PATH + " AND " + MediaStore.MediaColumns._ID + " > ?" +
                 " AND " + OWNER_PACKAGE_NAME + " = ?";
         String[] selectionArgs = new String[] { VIDEO_PATH, Long.toString(minimumId), CAMERA2_PACKAGENAME };
@@ -210,14 +210,14 @@ public class FilmstripContentQueries {
         Cursor cursor = contentResolver.query(contentUri, projection,
               selection, selectionArgs, orderBy);
 
-        if (isDebugOn) Log.e(TAG, "---zc forCameraPathVideo getCount:" + cursor.getCount() + ",mVideosCount:" + mVideosCount);
+        if (isDebugOn) Log.e(TAG, "forCameraPathVideo getCount:" + cursor.getCount() + ",mVideosCount:" + mVideosCount);
         if (cursor.getCount() != mVideosCount) {
             if (cursor != null) {
                 if (mVideosCount ==0) {
                     while (cursor.moveToNext()) {
                         VideoItem item = factory.get(cursor);
                         if (item != null) {
-                            if (isDebugOn) Log.e(TAG, "---zc forCameraPathVideo item:" + item.toString());
+                            if (isDebugOn) Log.e(TAG, "forCameraPathVideo item:" + item.toString());
                             mVideosResult.add(item);
                         } else {
                             final int dataIndex = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
@@ -230,7 +230,7 @@ public class FilmstripContentQueries {
                             cursor.moveToFirst();
                             VideoItem item = factory.get(cursor);
                             if (item != null) {
-                                if (isDebugOn) Log.e(TAG, "---zc forCameraPathVideo item:" + item.toString());
+                                if (isDebugOn) Log.e(TAG, "forCameraPathVideo item:" + item.toString());
                                 mVideosResult.add(item);
                             } else {
                                 final int dataIndex = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
@@ -241,7 +241,7 @@ public class FilmstripContentQueries {
                             while (cursor.moveToNext()) {
                                 VideoItem item = factory.get(cursor);
                                 if (item != null) {
-                                    if (isDebugOn) Log.e(TAG, "---zc forCameraPathVideo item:" + item.toString());
+                                    if (isDebugOn) Log.e(TAG, "forCameraPathVideo item:" + item.toString());
                                     mVideosResult.add(item);
                                 } else {
                                     final int dataIndex = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
@@ -259,7 +259,7 @@ public class FilmstripContentQueries {
                 Log.e(TAG, "video cursor == null");
             }
         } else {
-            if (isDebugOn) Log.e(TAG, "---zc cursor.getCount() == mVideosCount");
+            if (isDebugOn) Log.e(TAG, "cursor.getCount() == mVideosCount");
         }
         return mVideosResult;
     }
@@ -276,17 +276,17 @@ public class FilmstripContentQueries {
      * @param factory an object that can turn a given cursor into a LocalData object.
      * @return A list of LocalData objects that satisfy the query.
      */
-    public static <I extends FilmstripItem> List<I> forCameraPath(ContentResolver contentResolver,
+    public synchronized static <I extends FilmstripItem> List<I> forCameraPath(ContentResolver contentResolver,
           Uri contentUri, String[] projection, long minimumId, String orderBy,
           CursorToFilmstripItemFactory<I> factory) {
-        if (isDebugOn) Log.e(TAG, "---zc forCameraPath  contentUri:" + contentUri + ",minimumId:" + minimumId);
+        if (isDebugOn) Log.e(TAG, "forCameraPath  contentUri:" + contentUri + ",minimumId:" + minimumId);
         String selection = SELECT_BY_PATH + " AND " + MediaStore.MediaColumns._ID + " > ?";
         String[] selectionArgs = new String[] { PhotoDataQuery.CONTENT_URI.equals(contentUri) ? PHOTO_PATH : VIDEO_PATH, Long.toString(minimumId) };
 
         Cursor cursor = contentResolver.query(contentUri, projection,
               selection, selectionArgs, orderBy);
         List<I> result = new ArrayList<>();
-        if (isDebugOn) Log.e(TAG, "---zc forCameraPath getCount:" + cursor.getCount());
+        if (isDebugOn) Log.e(TAG, "forCameraPath getCount:" + cursor.getCount());
         if (cursor != null) {
             while (cursor.moveToNext()) {
                 int owner_package_name_index = cursor.getColumnIndex("owner_package_name");
@@ -295,7 +295,7 @@ public class FilmstripContentQueries {
                     if (packageName != null && packageName.equals(CAMERA2_PACKAGENAME)) {
                         I item = factory.get(cursor);
                         if (item != null) {
-                            if (isDebugOn) Log.e(TAG, "---zc forCameraPath item:" + item.toString());
+                            if (isDebugOn) Log.e(TAG, "forCameraPath item:" + item.toString());
                             result.add(item);
                         } else {
                             final int dataIndex = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
@@ -309,17 +309,17 @@ public class FilmstripContentQueries {
         return result;
     }
 
-    public static void deleteForAllPhoto(String title) {
-        if (isDebugOn) Log.e(TAG, "---zc deleteForAll mAllImagesCount1:" + mAllImagesCount);
+    public synchronized static void deleteForAllPhoto(String title) {
+        if (isDebugOn) Log.e(TAG, "deleteForAll mAllImagesCount1:" + mAllImagesCount);
         mAllImagesResult.removeIf(e -> (e.getData().getTitle().equals(title)));
         mAllImagesCount = mAllImagesResult.size();
-        if (isDebugOn) Log.e(TAG, "---zc deleteForAll mAllImagesCount2:" + mAllImagesCount);
+        if (isDebugOn) Log.e(TAG, "deleteForAll mAllImagesCount2:" + mAllImagesCount);
     }
 
-    public static void deleteForAllVideo(String title) {
-        if (isDebugOn) Log.e(TAG, "---zc deleteForAll mVideosCount1:" + mVideosCount);
+    public synchronized static void deleteForAllVideo(String title) {
+        if (isDebugOn) Log.e(TAG, "deleteForAll mVideosCount1:" + mVideosCount);
         mVideosResult.removeIf(e -> (e.getData().getTitle().equals(title)));
         mVideosCount = mVideosResult.size();
-        if (isDebugOn) Log.e(TAG, "---zc deleteForAll mVideosCount2:" + mVideosCount);
+        if (isDebugOn) Log.e(TAG, "deleteForAll mVideosCount2:" + mVideosCount);
     }
 }
