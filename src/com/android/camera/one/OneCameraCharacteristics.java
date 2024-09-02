@@ -147,6 +147,8 @@ public interface OneCameraCharacteristics {
     public boolean isAutoExposureSupported();
     
     public boolean isWhiteBalanceSupported();
-    
+
+    public boolean isFaceDetectSupported();
+
     public Set<CameraCapabilities.WhiteBalance> getSupportedWhiteBalances();
 }

@@ -193,7 +193,13 @@ public class OneCameraCharacteristicsImpl implements OneCameraCharacteristics {
         // TODO Auto-generated method stub
         return false;
     }
-    
+
+    @Override
+    public boolean isFaceDetectSupported() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
     @Override
     public Set<WhiteBalance> getSupportedWhiteBalances() {
         // TODO Auto-generated method stub

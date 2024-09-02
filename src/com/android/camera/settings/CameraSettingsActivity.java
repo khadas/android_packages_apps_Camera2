@@ -331,8 +331,9 @@ public class CameraSettingsActivity extends FragmentActivity {
             mLocation = (ManagedSwitchPreference) findPreference(Keys.KEY_RECORD_LOCATION);
             //mPreviewFullSize = (ManagedSwitchPreference) findPreference(Keys.KEY_PREVIEW_FULL_SIZE_ENABLE);
             mFaceDetection = (ManagedSwitchPreference) findPreference(Keys.KEY_FACE_DETECTION_ENABLED);
+            Log.d(TAG, "mFaceDetectionSupported = " + mFaceDetectionSupported);
             if (!mFaceDetectionSupported && mFaceDetection != null) {
-                getPreferenceScreen().removePreference(mFaceDetection);
+                //getPreferenceScreen().removePreference(mFaceDetection);
             }
 
             // Put in the summaries for the currently set values.

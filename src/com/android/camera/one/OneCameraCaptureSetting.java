@@ -40,6 +40,7 @@ public class OneCameraCaptureSetting {
     private final Observable<Integer> mExposureSetting;
     private final Observable<Boolean> mHdrSceneSetting;
     private final boolean mIsHdrPlusEnabled;
+    private final boolean mIsFaceDetectEnabled;
     
     private static final Log.Tag TAG = new Log.Tag("OneCameraCaptureSetting");
 
@@ -66,14 +67,19 @@ public class OneCameraCaptureSetting {
         } else {
             hdrSceneSetting = Observables.of(false);
         }
+        Observable<Boolean> isFaceDetectEnabled = SettingObserver.ofBoolean(settingsManager,
+                    SettingsManager.SCOPE_GLOBAL, Keys.KEY_FACE_DETECTION_ENABLED);
+        Log.i(TAG, "isFaceDetectEnabled: " + isFaceDetectEnabled.get());
         Observable<OneCamera.PhotoCaptureParameters.WhiteBalance> WbSetting = new WhiteBalanceSetting(
                 SettingObserver.ofString(settingsManager, cameraSettingScope, Keys.KEY_WHITEBALANCE));
+
         return new OneCameraCaptureSetting(
                 pictureSize,
                 flashSetting,
                 WbSetting,
                 exposureSetting,
                 hdrSceneSetting,
+                isFaceDetectEnabled.get(),
                 isHdrPlusEnabled);
     }
 
@@ -83,6 +89,7 @@ public class OneCameraCaptureSetting {
             Observable<OneCamera.PhotoCaptureParameters.WhiteBalance> wbSetting,
             Observable<Integer> exposureSetting,
             Observable<Boolean> hdrSceneSetting,
+            boolean isFaceDetectEnabled,
             boolean isHdrPlusEnabled) {
         mCaptureSize = captureSize;
         mFlashSetting = flashSetting;
@@ -90,6 +97,7 @@ public class OneCameraCaptureSetting {
         mExposureSetting = exposureSetting;
         mHdrSceneSetting = hdrSceneSetting;
         mIsHdrPlusEnabled = isHdrPlusEnabled;
+        mIsFaceDetectEnabled = isFaceDetectEnabled;
     }
 
     public Size getCaptureSize() {
@@ -114,5 +122,9 @@ public class OneCameraCaptureSetting {
 
     public boolean isHdrPlusEnabled() {
         return mIsHdrPlusEnabled;
+    }
+
+    public boolean isFaceDetectEnabled() {
+        return mIsFaceDetectEnabled;
     }
 }

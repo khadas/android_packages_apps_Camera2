@@ -38,6 +38,7 @@ public interface OneCameraFactory {
             Observable<OneCamera.PhotoCaptureParameters.WhiteBalance> wbSetting,
             Observable<Integer> exposureSetting,
             Observable<Boolean> hdrSceneSetting,
+            boolean faceDetectSetting,
             BurstFacade burstController,
             FatalErrorHandler fatalErrorHandler);
 }

@@ -40,4 +40,17 @@ public class FaceDetect {
             return FaceDetectMode.NONE;
         }
     }
+
+    public static FaceDetectMode getFaceDetectModeOff(OneCameraCharacteristics characteristics) {
+        List<FaceDetectMode> faceDetectModes = characteristics.getSupportedFaceDetectModes();
+
+        return FaceDetectMode.NONE;
+    }
+
+    public static FaceDetectMode getFaceDetectModeSimple(OneCameraCharacteristics characteristics) {
+        List<FaceDetectMode> faceDetectModes = characteristics.getSupportedFaceDetectModes();
+
+        return FaceDetectMode.SIMPLE;
+    }
+
 }

@@ -110,6 +110,7 @@ public class SimpleOneCameraFactory implements OneCameraFactory {
             final Observable<OneCamera.PhotoCaptureParameters.WhiteBalance> wbSetting,
             final Observable<Integer> exposureSetting,
             final Observable<Boolean> hdrSceneSetting,
+            final boolean faceDetectSetting,
             final BurstFacade burstFacade,
             final FatalErrorHandler fatalErrorHandler) {
         final Lifetime lifetime = new Lifetime();
@@ -193,6 +194,7 @@ public class SimpleOneCameraFactory implements OneCameraFactory {
                         exposureSetting,
                         zoomState,
                         hdrSceneSetting,
+                        faceDetectSetting,
                         CameraDevice.TEMPLATE_PREVIEW);
 
                 // Register the dynamic updater via orientation supplier

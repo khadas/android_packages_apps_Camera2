@@ -165,6 +165,25 @@ public class OneCameraCharacteristicsImpl implements OneCameraCharacteristics {
     }
 
     @Override
+    public boolean isFaceDetectSupported() {
+        List<FaceDetectMode> faceDetectModes = getSupportedFaceDetectModes();
+
+        int maxNumOfFacesSupported = mCameraCharacteristics.get(
+              CameraCharacteristics.STATISTICS_INFO_MAX_FACE_COUNT);
+
+        boolean faceDetectMode_available = false;
+
+        if (faceDetectModes.contains(FaceDetectMode.FULL) ||
+            faceDetectModes.contains(FaceDetectMode.SIMPLE)) {
+            faceDetectMode_available = true;
+        } else {
+            faceDetectMode_available = false;
+        }
+
+        return faceDetectMode_available && (maxNumOfFacesSupported>0);
+    }
+
+    @Override
     public List<FaceDetectMode> getSupportedFaceDetectModes() {
         int[] modes = mCameraCharacteristics.get(
               CameraCharacteristics.STATISTICS_INFO_AVAILABLE_FACE_DETECT_MODES);

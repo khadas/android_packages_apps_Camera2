@@ -86,6 +86,7 @@ public class BasicCameraFactory {
             Observable<Integer> exposure,
             Observable<Float> zoom,
             Observable<Boolean> hdrSceneSetting,
+            boolean faceDetectSetting,
             int templateType) {
         RequestTemplate requestTemplate = new RequestTemplate(rootTemplate);
         if (cameraCharacteristics.isContinuousPictureAutoFocusSupported()) {
@@ -101,9 +102,17 @@ public class BasicCameraFactory {
         requestTemplate.setParam(
               CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, exposure);
 
-        Supplier<FaceDetectMode> faceDetectMode = Suppliers.ofInstance(
-              FaceDetect.getHighestFaceDetectMode(cameraCharacteristics));
 
+        //Supplier<FaceDetectMode> faceDetectMode = Suppliers.ofInstance(
+              //FaceDetect.getHighestFaceDetectMode(cameraCharacteristics));
+        Supplier<FaceDetectMode> faceDetectMode;
+        if (faceDetectSetting) {
+             faceDetectMode = Suppliers.ofInstance(
+                FaceDetect.getFaceDetectModeSimple(cameraCharacteristics));
+        } else {
+            faceDetectMode = Suppliers.ofInstance(
+                FaceDetect.getFaceDetectModeOff(cameraCharacteristics));
+        }
         requestTemplate.setParam(CaptureRequest.CONTROL_MODE,
               new ControlModeSelector(hdrSceneSetting,
                     faceDetectMode,
@@ -113,6 +122,7 @@ public class BasicCameraFactory {
                     hdrSceneSetting,
                     faceDetectMode,
                     cameraCharacteristics.getSupportedHardwareLevel()));
+
         requestTemplate.setParam(CaptureRequest.STATISTICS_FACE_DETECT_MODE,
               new StatisticsFaceDetectMode(faceDetectMode));
 

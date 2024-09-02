@@ -127,6 +127,7 @@ public class OneCameraCreator {
                 captureSetting.getWhiteBalanceSetting(),
                 captureSetting.getExposureSetting(),
                 captureSetting.getHdrSceneSetting(),
+                captureSetting.isFaceDetectEnabled(),
                 burstController,
                 fatalErrorHandler);
     }
