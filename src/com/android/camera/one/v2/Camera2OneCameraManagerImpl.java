@@ -182,6 +182,13 @@ public class Camera2OneCameraManagerImpl extends CameraManager.AvailabilityCallb
             Log.d(TAG, "Getting First FRONT Camera");
             //xcq add
             cameraId = findFirstCameraIdFacing(CameraCharacteristics.LENS_FACING_FRONT);
+            if (cameraId == null) {
+                Log.w(TAG, "No front-facing camera found,try to find external facing camera.");
+                cameraId = findFirstCameraIdFacing(CameraCharacteristics.LENS_FACING_EXTERNAL);
+                if (cameraId == null) {
+                    Log.w(TAG, "No external camera found.");
+                }
+            }
         }
         return cameraId;
     }
