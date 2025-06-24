@@ -362,7 +362,7 @@ public class SettingsUtil {
     private static boolean isVideoQualitySupported(int videoQuality) {
         // 4k is only supported on L or higher but some devices falsely report
         // to have support for it on K, see b/18172081.
-        if (!ApiHelper.isLOrHigher() && videoQuality == CamcorderProfile.QUALITY_2160P) {
+        if (!ApiHelper.isLOrHigher()) {
             return false;
         }
         return true;
